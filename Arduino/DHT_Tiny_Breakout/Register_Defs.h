@@ -54,15 +54,15 @@
 // ***
 const uint8_t _registerProtection[REGISTER_TOTAL_SIZE] =
 {
-  2, 2, 2, 2,
-  2, 2, 2, 2,
-  0, 1, 1, 1,
-  0, 1, 1, 1,
-  0, 1, 1, 1,
-  0, 1, 1, 1,
-  0, 1, 1, 1,
-  0,
-  0,
+  2, 2, 2, 2, //REGISTER_TEMPERATURE (read-only)
+  2, 2, 2, 2, //REGISTER_HUMIDITY (read-only)
+  0, 1, 1, 1, //REGISTER_INTERVAL
+  2, 2, 2, 2, //REGISTER_READING_ID (read-only)
+  0, 1, 1, 1, //REGISTER_UPPER_THRESHOLD
+  0, 1, 1, 1, //REGISTER_LOWER_THRESHOLD
+  0, 1, 1, 1, //REGISTER_START_DELAY
+  0,          //REGISTER_CONFIG
+  2,          //REGISTER_STATUS (read-only)
 };
 
 #endif

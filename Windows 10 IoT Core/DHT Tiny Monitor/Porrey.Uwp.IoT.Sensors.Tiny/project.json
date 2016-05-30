@@ -1,5 +1,6 @@
 ﻿{
   "dependencies": {
+    "IoT.I2c": "1.0.4",
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.1.0"
   },
   "frameworks": {
