@@ -112,11 +112,6 @@
     <EmbeddedResource Include="Properties\Porrey.Uwp.IoT.Sensors.DhtTiny.rd.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Windows.Devices.DevicesLowLevelContract">
-      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\Windows.Devices.DevicesLowLevelContract\2.0.0.0\Windows.Devices.DevicesLowLevelContract.winmd</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <SDKReference Include="WindowsIoT, Version=10.0.10586.0">
       <Name>Windows IoT Extensions for the UWP</Name>
     </SDKReference>
