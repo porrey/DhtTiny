@@ -27,7 +27,7 @@
 		<Border Grid.Row="0"
 				BorderBrush="#5b9bd5"
 				BorderThickness="2"
-				Background="#fcc064"
+				Background="#c6974f"
 				Margin="15,15,15,0">
 			<Grid>
 				<Grid.ColumnDefinitions>
