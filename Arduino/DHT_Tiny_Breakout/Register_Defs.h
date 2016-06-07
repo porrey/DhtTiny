@@ -5,7 +5,8 @@
 // *** Address of each variable
 // *** within the registers.
 // ***
-#define REGISTER_TEMPERATURE        0                                          // *** float
+#define REGISTER_READALL            0                                          // *** uint8
+#define REGISTER_TEMPERATURE        REGISTER_READALL          + SIZE_UINT8     // *** float
 #define REGISTER_HUMIDITY           REGISTER_TEMPERATURE      + SIZE_FLOAT     // *** float
 #define REGISTER_INTERVAL           REGISTER_HUMIDITY         + SIZE_FLOAT     // *** uint32
 #define REGISTER_READING_ID         REGISTER_INTERVAL         + SIZE_UINT32    // *** uint32
@@ -20,6 +21,23 @@
 // ***
 #define REGISTER_TOTAL_SIZE         REGISTER_STATUS           + SIZE_UINT8
 
+// ***
+// *** This array indicates he number of bytes to return when a read
+// *** request is made. If the register adress is aligned to the a
+// *** startable address, then the correct numbr of bytes will be
+// *** returned. If not, the byte count returned is zero.
+// ***
+const uint8_t _registerSize[REGISTER_TOTAL_SIZE] = { REGISTER_TOTAL_SIZE,
+                                                     SIZE_FLOAT, 0, 0, 0,
+                                                     SIZE_FLOAT, 0, 0, 0,
+                                                     SIZE_UINT32, 0, 0, 0,
+                                                     SIZE_UINT32, 0, 0, 0,
+                                                     SIZE_FLOAT, 0, 0, 0,
+                                                     SIZE_FLOAT, 0, 0, 0,
+                                                     SIZE_UINT32, 0, 0, 0,
+                                                     SIZE_UINT8,
+                                                     SIZE_UINT8 };
+                                                     
 // ***
 // *** Configuration bits.
 // ***
@@ -54,6 +72,7 @@
 // ***
 const uint8_t _registerProtection[REGISTER_TOTAL_SIZE] =
 {
+  2,          //REGISTER_READALL (read-only)
   2, 2, 2, 2, //REGISTER_TEMPERATURE (read-only)
   2, 2, 2, 2, //REGISTER_HUMIDITY (read-only)
   0, 1, 1, 1, //REGISTER_INTERVAL

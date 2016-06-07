@@ -21,16 +21,21 @@
 // *** Address of each variable
 // *** within the registers.
 // ***
-#define REGISTER_TEMPERATURE             0
-#define REGISTER_HUMIDITY                4
-#define REGISTER_INTERVAL                8
-#define REGISTER_READING_ID             12
-#define REGISTER_UPPER_THRESHOLD        16
-#define REGISTER_LOWER_THRESHOLD        20
-#define REGISTER_START_DELAY            24
-#define REGISTER_CONFIG                 28
-#define REGISTER_STATUS                 30
-#define REGISTER_TOTAL_SIZE             REGISTER_STATUS + SIZE_UINT8
+#define REGISTER_READALL            0                                          // *** uint8
+#define REGISTER_TEMPERATURE        REGISTER_READALL          + SIZE_UINT8     // *** float
+#define REGISTER_HUMIDITY           REGISTER_TEMPERATURE      + SIZE_FLOAT     // *** float
+#define REGISTER_INTERVAL           REGISTER_HUMIDITY         + SIZE_FLOAT     // *** uint32
+#define REGISTER_READING_ID         REGISTER_INTERVAL         + SIZE_UINT32    // *** uint32
+#define REGISTER_UPPER_THRESHOLD    REGISTER_READING_ID       + SIZE_UINT32    // *** float
+#define REGISTER_LOWER_THRESHOLD    REGISTER_UPPER_THRESHOLD  + SIZE_FLOAT     // *** float
+#define REGISTER_START_DELAY        REGISTER_LOWER_THRESHOLD  + SIZE_FLOAT     // *** uint32
+#define REGISTER_CONFIG             REGISTER_START_DELAY      + SIZE_UINT32    // *** uint8
+#define REGISTER_STATUS             REGISTER_CONFIG           + SIZE_UINT8     // *** uint8
+
+// ***
+// *** Total size of the registers in bytes.
+// ***
+#define REGISTER_TOTAL_SIZE         REGISTER_STATUS           + SIZE_UINT8
 
 // ***
 // *** Configuration bits.
@@ -56,10 +61,15 @@
 #define STATUS_READ_ERROR                   6
 #define STATUS_WRITE_ERROR                  7
 
+// ***
+// *** The amount of delay to use after a write
+// *** operation to allow the device time to respond.
+// ***
 #define DEVICE_DELAY 50
 
 // ***
-// ***
+// *** The amount of time, in milliseonds, to
+// *** delay in after each loop iteration.
 // ***
 uint32_t _myInterval = 2000;
 
@@ -370,7 +380,7 @@ void displayData()
   // *** Read all of the registers at once for efficiency.
   // ***
   byte registers[REGISTER_TOTAL_SIZE];
-  requestBytes(0, REGISTER_TOTAL_SIZE, registers);
+  requestBytes(REGISTER_READALL, REGISTER_TOTAL_SIZE, registers);
 
   // ***
   // *** Get the current reading ID.
@@ -432,19 +442,13 @@ void requestBytes(uint8_t registerId, uint8_t byteCount, uint8_t* data)
   // ***
   Wire.beginTransmission(DHT_I2C_ADDR);
   Wire.write(registerId);
-  byte response = Wire.endTransmission(false);
+  byte response = Wire.endTransmission(true);
 
   if (response == 0)
   {
-    /*Wire.requestFrom(DHT_I2C_ADDR, byteCount);
-      for (int i = 0; i < byteCount; i++)
-      {
-      data[i] = Wire.read();
-      }*/
-
+    Wire.requestFrom(DHT_I2C_ADDR, byteCount);
     for (int i = 0; i < byteCount; i++)
     {
-      Wire.requestFrom(DHT_I2C_ADDR, 1);
       data[i] = Wire.read();
     }
   }

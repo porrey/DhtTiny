@@ -49,6 +49,11 @@ uint32_t _lastReading = millis();
 // ***
 volatile bool _thresholdsEnabled = false;
 
+// ***
+// *** Thenumber of bytes to return in the next request.
+// ***
+volatile uint8_t _requestCount = 0;
+
 void setup()
 {
   // ***
@@ -209,6 +214,11 @@ void receiveEvent(uint8_t byteCount)
         }
 
         // ***
+        // *** Reset the request count to 0.
+        // ***
+        _requestCount = 0;
+
+        // ***
         // *** Set the read/write error status bits.
         // ***
         setRegisterBit(REGISTER_STATUS, STATUS_READ_ERROR, 0);
@@ -216,6 +226,11 @@ void receiveEvent(uint8_t byteCount)
       }
       else
       {
+        // ***
+        // *** Set the number of bytes to read in the request
+        // ***
+        _requestCount = _registerSize[_registerPosition];
+
         // ***
         // *** Set the read/write error status bits.
         // ***
@@ -264,8 +279,16 @@ void requestEvent()
   // ***
   // *** Send the next byte in the registers.
   // ***
-  TinyWireS.send(_registers[_registerPosition]);
-  advanceRegisterPosition();
+  for (int i = 0; i < _requestCount; i++)
+  {
+    TinyWireS.send(_registers[_registerPosition]);
+    advanceRegisterPosition();
+  }
+
+  // ***
+  // *** Reset the request cunt to 0.
+  // ***
+  _requestCount = 0;
 }
 
 void checkSensorInterval()
