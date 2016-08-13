@@ -1,44 +1,72 @@
-﻿using Windows.Devices.I2c;
+﻿using System;
+using Windows.Devices.I2c;
 
 namespace Porrey.Uwp.IoT.Sensors.Tiny
 {
-	public class DhtTiny : I2c
+    public class DhtTiny : I2c
 	{
 		private const byte REGISTER_READALL = 0;
-		private const byte REGISTER_TEMPERATURE = 4;
-		private const byte REGISTER_HUMIDITY = 8;
-		private const byte REGISTER_INTERVAL = 12;
-		private const byte REGISTER_READING_ID = 16;
-		private const byte REGISTER_UPPER_THRESHOLD = 20;
-		private const byte REGISTER_LOWER_THRESHOLD = 24;
-		private const byte REGISTER_START_DELAY = 28;
+		private const byte REGISTER_TEMPERATURE = 1;
+		private const byte REGISTER_HUMIDITY = 5;
+		private const byte REGISTER_INTERVAL = 9;
+		private const byte REGISTER_READING_ID = 13;
+		private const byte REGISTER_UPPER_THRESHOLD = 17;
+		private const byte REGISTER_LOWER_THRESHOLD = 21;
+		private const byte REGISTER_START_DELAY = 25;
 		private const byte REGISTER_CONFIG = 29;
 		private const byte REGISTER_STATUS = 30;
 
 		private const byte REGISTER_SIZE = 31;
 
+		// ***
+		// *** Configuration bits.
+		// ***
+		public enum ConfigBit
+		{
+			SensorEnabled = 0,
+			ThresholdEnabled = 1,
+			TriggerReading = 2,
+			Reserved1 = 3,
+			Reserved2 = 4,
+			Reserved3 = 5,
+			WriteConfig = 6,
+			ResetConfig = 7
+		}
+
+		// ***
+		// *** Status register bits.
+		// ***
+		public enum StatusBit
+		{
+			IsEnabled = 0,
+			UpperThresholdExceeded = 1,
+			LowerThresholdExceeded = 2,
+			Reserved1 = 3,
+			Reserved2 = 4,
+			ConfigSaved = 5,
+			ReadError = 6,
+			WriteError = 7,
+		}
+
 		public DhtTiny(byte deviceAddress)
-			: base(deviceAddress)
+				: base(deviceAddress, I2cBusSpeed.FastMode)
 		{
 		}
 
 		public DhtTiny(byte deviceAddress, I2cBusSpeed busSpeed)
-			: base(deviceAddress, busSpeed)
+				: base(deviceAddress, busSpeed)
 		{
 		}
 
-		private int _interval = 0;
-		public int Interval
-		{
-			get
-			{
-				return _interval;
-			}
-			set
-			{
-				_interval = value;
-			}
-		}
+		public float Temperature { get; private set; }
+		public float Humidity { get; private set; }
+		public uint Interval { get; private set; }
+		public uint ReadingId { get; private set; }
+		public float UpperThreshold { get; private set; }
+		public float LowerThreshold { get; private set; }
+		public uint StartDelay { get; private set; }
+		public byte Configuration { get; private set; }
+		public byte Status { get; private set; }
 
 		public bool Refresh()
 		{
@@ -55,13 +83,17 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** Read all of the registers.
 				// ***
 				byte[] readBuffer = new byte[REGISTER_SIZE];
+				this.Device.Read(readBuffer);
 
-				for (int i = 0; i < REGISTER_SIZE; i++)
-				{
-					byte[] localBuffer = new byte[1];
-					this.Device.Read(localBuffer);
-					readBuffer[i] = localBuffer[0];
-				}
+				this.Temperature = BitConverter.ToSingle(readBuffer, REGISTER_TEMPERATURE);
+				this.Humidity = BitConverter.ToSingle(readBuffer, REGISTER_HUMIDITY);
+				this.Interval = BitConverter.ToUInt32(readBuffer, REGISTER_INTERVAL);
+				this.ReadingId = BitConverter.ToUInt32(readBuffer, REGISTER_READING_ID);
+				this.UpperThreshold = BitConverter.ToSingle(readBuffer, REGISTER_UPPER_THRESHOLD);
+				this.LowerThreshold = BitConverter.ToSingle(readBuffer, REGISTER_LOWER_THRESHOLD);
+				this.StartDelay = BitConverter.ToUInt32(readBuffer, REGISTER_START_DELAY);
+				this.Configuration = readBuffer[REGISTER_CONFIG];
+				this.Status = readBuffer[REGISTER_STATUS];
 			}
 			else
 			{
@@ -71,9 +103,99 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public bool GetInterval(int interval)
+		public bool GetStatusBit(DhtTiny.StatusBit bitIndex)
 		{
-			bool returnValue = false;
+			return Bit.Get(this.Status, (byte)bitIndex);
+		}
+
+		public bool GetConfigurationBit(DhtTiny.ConfigBit bitIndex)
+		{
+			return Bit.Get(this.Configuration, (byte)bitIndex);
+		}
+
+		public bool IsEnabled
+		{
+			get
+			{
+				return ((this.GetConfiguration() & (1 << (byte)ConfigBit.SensorEnabled)) == 1) ? true : false;
+			}
+			set
+			{
+				byte config = Bit.Set(this.GetConfiguration(), (byte)ConfigBit.SensorEnabled, value);
+				this.SetConfiguration(config);
+			}
+		}
+
+		public bool ThresholdsAreEnabled
+		{
+			get
+			{
+				return ((this.GetConfiguration() & (1 << (byte)ConfigBit.ThresholdEnabled)) == 1) ? true : false;
+			}
+			set
+			{
+				byte config = Bit.Set(this.GetConfiguration(), (byte)ConfigBit.ThresholdEnabled, value);
+				this.SetConfiguration(config);
+			}
+		}
+
+		public float GetTemperature()
+		{
+			float returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_TEMPERATURE };
+
+				// ***
+				// *** Write the register value and read from the device
+				// *** at the same time.
+				// ***
+				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
+				this.Device.WriteRead(writeBuffer, readBuffer);
+				returnValue = BitConverter.ToSingle(readBuffer, 0);
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public float GetHumidity()
+		{
+			float returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_HUMIDITY };
+
+				// ***
+				// *** Write the register value and read from the device
+				// *** at the same time.
+				// ***
+				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
+				this.Device.WriteRead(writeBuffer, readBuffer);
+				returnValue = BitConverter.ToSingle(readBuffer, 0);
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public uint GetInterval()
+		{
+			uint returnValue = 0;
 
 			if (this.IsInitialized)
 			{
@@ -86,8 +208,9 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** Write the register value and read from the device
 				// *** at the same time.
 				// ***
-				byte[] readBuffer = new byte[4];
+				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
 				this.Device.WriteRead(writeBuffer, readBuffer);
+				returnValue = BitConverter.ToUInt32(readBuffer, 0);
 			}
 			else
 			{
@@ -97,7 +220,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public bool SetInterval(int interval)
+		public bool SetInterval(uint value)
 		{
 			bool returnValue = false;
 
@@ -106,12 +229,256 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** The register ID
 				// ***
-				byte[] writeBuffer = new byte[5] { REGISTER_INTERVAL, 0, 0, 0, 0 };
+				byte[] data = BitConverter.GetBytes(value);
+				byte[] writeBuffer = new byte[5] { REGISTER_INTERVAL, data[0], data[1], data[2], data[3] };
 
 				// ***
 				// *** Write the register value and the value.
 				// ***
 				this.Device.Write(writeBuffer);
+				returnValue = true;
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public uint GetReadingId()
+		{
+			uint returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_READING_ID };
+
+				// ***
+				// *** Write the register value and read from the device
+				// *** at the same time.
+				// ***
+				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
+				this.Device.WriteRead(writeBuffer, readBuffer);
+				returnValue = BitConverter.ToUInt32(readBuffer, 0);
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public float GetUpperThreshold()
+		{
+			float returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_UPPER_THRESHOLD };
+
+				// ***
+				// *** Write the register value and read from the device
+				// *** at the same time.
+				// ***
+				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
+				this.Device.WriteRead(writeBuffer, readBuffer);
+				returnValue = BitConverter.ToSingle(readBuffer, 0);
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public bool SetUpperThreshold(float value)
+		{
+			bool returnValue = false;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] data = BitConverter.GetBytes(value);
+				byte[] writeBuffer = new byte[5] { REGISTER_UPPER_THRESHOLD, data[0], data[1], data[2], data[3] };
+
+				// ***
+				// *** Write the register value and the value.
+				// ***
+				this.Device.Write(writeBuffer);
+				returnValue = (this.GetUpperThreshold() == value);
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public float GetLowerThreshold()
+		{
+			float returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_LOWER_THRESHOLD };
+
+				// ***
+				// *** Write the register value and read from the device
+				// *** at the same time.
+				// ***
+				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
+				this.Device.WriteRead(writeBuffer, readBuffer);
+				returnValue = BitConverter.ToSingle(readBuffer, 0);
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public bool SetLowerThreshold(float value)
+		{
+			bool returnValue = false;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] data = BitConverter.GetBytes(value);
+				byte[] writeBuffer = new byte[5] { REGISTER_LOWER_THRESHOLD, data[0], data[1], data[2], data[3] };
+
+				// ***
+				// *** Write the register value and the value.
+				// ***
+				this.Device.Write(writeBuffer);
+				returnValue = true;
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public byte GetStatus()
+		{
+			byte returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_STATUS };
+
+				// ***
+				// *** Write the register value and read from the device
+				// *** at the same time.
+				// ***
+				byte[] readBuffer = new byte[1] { 0 };
+				this.Device.WriteRead(writeBuffer, readBuffer);
+				returnValue = readBuffer[0];
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public byte GetConfiguration()
+		{
+			byte returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_CONFIG };
+
+				// ***
+				// *** Write the register value and read from the device
+				// *** at the same time.
+				// ***
+				byte[] readBuffer = new byte[1] { 0 };
+				this.Device.WriteRead(writeBuffer, readBuffer);
+				returnValue = readBuffer[0];
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public bool SetConfiguration(byte value)
+		{
+			bool returnValue = false;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[2] { REGISTER_CONFIG, value };
+
+				// ***
+				// *** Write the register value and the value.
+				// ***
+				this.Device.Write(writeBuffer);
+
+				returnValue = true;
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public bool SetConfiguration(byte position, bool bit)
+		{
+			bool returnValue = false;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** Get the current configuration value.
+				// ***
+				byte currentValue = this.GetConfiguration();
+
+				// ***
+				// *** Set the bit.
+				// ***
+				Bit.Set(currentValue, position, bit);
+
+				// ***
+				// *** Write the new value.
+				// ***
+				returnValue = this.SetConfiguration(currentValue);
 			}
 			else
 			{
