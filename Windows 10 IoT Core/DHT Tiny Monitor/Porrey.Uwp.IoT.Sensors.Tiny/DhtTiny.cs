@@ -53,11 +53,6 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 		{
 		}
 
-		public DhtTiny(byte deviceAddress, I2cBusSpeed busSpeed)
-				: base(deviceAddress, busSpeed)
-		{
-		}
-
 		public float Temperature { get; private set; }
 		public float Humidity { get; private set; }
 		public uint Interval { get; private set; }
