@@ -313,29 +313,27 @@ namespace Porrey.Tiny.Dht
 		public RelayCommand Reserved3Command { get; set; }
 		public RelayCommand WriteConfigurationCommand { get; set; }
 		public RelayCommand ResetConfigurationCommand { get; set; }
-
-		public RelayCommand RebootCommand { get; set; }
+		public RelayCommand SettingsCommand { get; set; }
 
 		private void InitializeCommands()
 		{
 			this.EnabledCommand = new RelayCommand(OnEnabledCommand, OnCanEnabledCommand);
 			this.EnableThresholdsCommand = new RelayCommand(OnEnableThresholdsCommand, OnCanEnableThresholdsCommand);
-			this.TriggerReadingCommand = new RelayCommand(OnReboot, OnCanTriggerReadingCommand);
-			this.Reserved1Command = new RelayCommand(OnReboot, OnCanReserved1Command);
-			this.Reserved2Command = new RelayCommand(OnReboot, OnCanReserved2Command);
-			this.Reserved3Command = new RelayCommand(OnReboot, OnCanReserved3Command);
-			this.WriteConfigurationCommand = new RelayCommand(OnReboot, OnCanWriteConfigurationCommand);
-			this.ResetConfigurationCommand = new RelayCommand(OnReboot, OnCanResetConfigurationCommand);
-
-			this.RebootCommand = new RelayCommand(OnReboot, OnCanReboot);
+			this.TriggerReadingCommand = new RelayCommand(OnTriggerReadingCommand, OnCanTriggerReadingCommand);
+			this.Reserved1Command = new RelayCommand(OnReserved1Command, OnCanReserved1Command);
+			this.Reserved2Command = new RelayCommand(OnReserved2Command, OnCanReserved2Command);
+			this.Reserved3Command = new RelayCommand(OnReserved3Command, OnCanReserved3Command);
+			this.WriteConfigurationCommand = new RelayCommand(OnWriteConfigurationCommand, OnCanWriteConfigurationCommand);
+			this.ResetConfigurationCommand = new RelayCommand(OnResetConfigurationCommand, OnCanResetConfigurationCommand);
+			this.SettingsCommand = new RelayCommand(OnSettingsCommand, OnCanSettingsCommand);
 		}
 
-		private bool OnCanReboot()
+		private bool OnCanSettingsCommand()
 		{
 			return _dhtTiny.IsInitialized && _dhtTiny.IsEnabled;
 		}
 
-		private void OnReboot()
+		private void OnSettingsCommand()
 		{
 		}
 
@@ -364,9 +362,17 @@ namespace Porrey.Tiny.Dht
 			return _dhtTiny.IsInitialized;
 		}
 
+		private void OnTriggerReadingCommand()
+		{
+		}
+
 		private bool OnCanReserved1Command()
 		{
 			return _dhtTiny.IsInitialized;
+		}
+
+		private void OnReserved1Command()
+		{
 		}
 
 		private bool OnCanReserved2Command()
@@ -374,9 +380,17 @@ namespace Porrey.Tiny.Dht
 			return _dhtTiny.IsInitialized;
 		}
 
+		private void OnReserved2Command()
+		{
+		}
+
 		private bool OnCanReserved3Command()
 		{
 			return _dhtTiny.IsInitialized;
+		}
+
+		private void OnReserved3Command()
+		{
 		}
 
 		private bool OnCanWriteConfigurationCommand()
@@ -384,9 +398,17 @@ namespace Porrey.Tiny.Dht
 			return _dhtTiny.IsInitialized;
 		}
 
+		private void OnWriteConfigurationCommand()
+		{
+		}
+
 		private bool OnCanResetConfigurationCommand()
 		{
 			return _dhtTiny.IsInitialized;
+		}
+
+		private void OnResetConfigurationCommand()
+		{
 		}
 		#endregion
 	}

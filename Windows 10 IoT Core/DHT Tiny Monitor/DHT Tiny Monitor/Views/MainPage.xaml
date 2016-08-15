@@ -1,862 +1,825 @@
 ﻿<common:BindablePage x:Class="Porrey.Tiny.Dht.MainPage"
-                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                     xmlns:local="using:Porrey.Tiny.Dht"
-                     xmlns:common="using:Porrey.Tiny.Dht.Common"
-                     xmlns:font="using:Windows.UI.Xaml.Media"
-                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                     mc:Ignorable="d"
-                     RequestedTheme="Dark">
-
-    <common:BindablePage.Resources>
-        <font:FontFamily x:Key="FontFamily">Segoe UI</font:FontFamily>
-        <x:Double x:Key="RegisterLabelFontSize">18</x:Double>
-        <x:Double x:Key="BitValueFontSize">54</x:Double>
-        <x:Double x:Key="SliderFontSize">16</x:Double>
-    </common:BindablePage.Resources>
-
-    <Grid Background="#444444">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="150" />
-            <RowDefinition Height="350" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <!-- Header -->
-        <Border Grid.Row="0"
-                BorderBrush="#5b9bd5"
-                BorderThickness="2"
-                Background="#c6974f"
-                Margin="15,15,15,0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Image Grid.Column="0"
-                       Source="ms-appx:///Assets/temperature-512.png"
-                       Margin="5,5,5,5" />
-
-                <TextBlock Grid.Column="1"
-                           Text="DHT Tiny Monitor"
-                           FontSize="74"
-                           FontFamily="{StaticResource FontFamily}"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Left" />
-
-            </Grid>
-        </Border>
-
-        <!-- Temperature/Humidity Display -->
-        <Border Grid.Row="1"
-                BorderBrush="#5b9bd5"
-                BorderThickness="2"
-                Margin="15,15,15,0">
-
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
-                </Grid.ColumnDefinitions>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="100" />
-                    <RowDefinition Height="1*" />
-                </Grid.RowDefinitions>
-
-                <!-- Temperature-->
-                <TextBlock Grid.Column="0"
-                           Grid.Row="0"
-                           Text="Temperature"
-                           FontSize="54"
-                           FontFamily="{StaticResource FontFamily}"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-
-                <TextBlock x:Name="temperature"
-                           Grid.Column="0"
-                           Grid.Row="1"
-                           Text="{x:Bind Temperature, Mode=OneWay}"
-                           FontSize="150"
-                           FontFamily="{StaticResource FontFamily}"
-                           Foreground="#fcc064"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-
-                <!-- Humidity -->
-                <TextBlock Grid.Column="1"
-                           Grid.Row="0"
-                           Text="Humidity"
-                           FontSize="54"
-                           FontFamily="{StaticResource FontFamily}"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-
-                <TextBlock x:Name="humidity"
-                           Grid.Column="1"
-                           Grid.Row="1"
-                           Text="{x:Bind Humidity, Mode=OneWay}"
-                           FontSize="150"
-                           FontFamily="{StaticResource FontFamily}"
-                           Foreground="#fcc064"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-            </Grid>
-
-        </Border>
-
-        <!-- Control Panel -->
-        <Border Grid.Row="2"
-                BorderBrush="#5b9bd5"
-                BorderThickness="2"
-                Margin="15,15,15,15">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*" />
-                    <RowDefinition Height="1*" />
-                    <RowDefinition Height="1*" />
-                </Grid.RowDefinitions>
-
-                <!-- Status Register -->
-                <Border Grid.Row="0"
-                        Grid.Column="0"
-                        BorderBrush="White"
-                        BorderThickness="0,0,0,1">
-                    <TextBlock Text="Status Register Bits"
-                               FontFamily="{StaticResource FontFamily}"
-                               TextWrapping="WrapWholeWords"
-                               FontSize="24"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center" />
-                </Border>
-                <Grid Grid.Row="0"
-                      Grid.Column="1"
-                      HorizontalAlignment="Stretch">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*" />
-                        <RowDefinition Height="1*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- Labels -->
-                    <Border Grid.Row="0"
-                            Grid.Column="0"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Enabled"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="1"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Upper Threshold Exceeded"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="2"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Lower Threshold Exceeded"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="3"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Reserved"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="4"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Reserved"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="5"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Configuration Saved"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="6"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Read Error"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="7"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Write Error"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <!-- Values -->
-                    <Border Grid.Row="1"
-                            Grid.Column="0"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-
-                        <TextBlock x:Name="statusEnabled"
-                                   Text="{x:Bind StatusEnabled, Mode=OneWay}"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   FontSize="{StaticResource BitValueFontSize}"
-                                   Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="1"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock x:Name="statusUpperThresholdExceeded"
-                                   Text="{x:Bind StatusUpperThresholdExceeded, Mode=OneWay}"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   FontSize="{StaticResource BitValueFontSize}"
-                                   Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="2"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock x:Name="statusLowerThresholdExceeded"
-                                   Text="{x:Bind StatusLowerThresholdExceeded, Mode=OneWay}"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   FontSize="{StaticResource BitValueFontSize}"
-                                   Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="3"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock  x:Name="statusReserved1"
-                                    Text="{x:Bind StatusReserved1, Mode=OneWay}"
-                                    FontFamily="{StaticResource FontFamily}"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Center"
-                                    FontSize="{StaticResource BitValueFontSize}"
-                                    Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="4"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock  x:Name="statusReserved2"
-                                    Text="{x:Bind StatusReserved2, Mode=OneWay}"
-                                    FontFamily="{StaticResource FontFamily}"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Center"
-                                    FontSize="{StaticResource BitValueFontSize}"
-                                    Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="5"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock x:Name="statusConfigurationSaved"
-                                   Text="{x:Bind StatusConfigurationSaved, Mode=OneWay}"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   FontSize="{StaticResource BitValueFontSize}"
-                                   Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="6"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock x:Name="statusReadError"
-                                   Text="{x:Bind StatusReadError, Mode=OneWay}"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   FontSize="{StaticResource BitValueFontSize}"
-                                   Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="7"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock x:Name="statusWriteError"
-                                   Text="{x:Bind StatusWriteError, Mode=OneWay}"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   FontSize="{StaticResource BitValueFontSize}"
-                                   Margin="10,10,10,10" />
-                    </Border>
-                </Grid>
-
-                <!-- Configuration Register -->
-                <Border Grid.Row="1"
-                        Grid.Column="0"
-                        BorderBrush="White"
-                        BorderThickness="0,0,0,1">
-                    <TextBlock Text="Configuration Register Bits"
-                               FontFamily="{StaticResource FontFamily}"
-                               TextWrapping="WrapWholeWords"
-                               FontSize="24"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center" />
-                </Border>
-                <Grid Grid.Row="1"
-                      Grid.Column="1"
-                      HorizontalAlignment="Stretch">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*" />
-                        <RowDefinition Height="1*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- Labels -->
-                    <Border Grid.Row="0"
-                            Grid.Column="0"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Enabled"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="1"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Threshold Enabled"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="2"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Trigger Reading"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="3"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Reserved"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="4"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Reserved"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="5"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Reserved"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="6"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Write Configuration"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="7"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Reset Configuration"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <!-- Values -->
-                    <Border Grid.Row="1"
-                            Grid.Column="0"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <ToggleButton x:Name="configEnabled"
-                                      Command="{x:Bind EnabledCommand, Mode=OneWay}"
-                                      Content="On/Off"
-                                      FontFamily="{StaticResource FontFamily}"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"
-                                      FontSize="{StaticResource RegisterLabelFontSize}"
-                                      Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="1"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <ToggleButton x:Name="configThresholdEnabled"
-                                      Command="{x:Bind EnableThresholdsCommand, Mode=OneWay}"
-                                      Content="On/Off"
-                                      FontFamily="{StaticResource FontFamily}"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"
-                                      FontSize="{StaticResource RegisterLabelFontSize}"
-                                      Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="2"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <ToggleButton x:Name="configTriggerReading"
-                                      Command="{x:Bind TriggerReadingCommand, Mode=OneWay}"
-                                      Content="On/Off"
-                                      FontFamily="{StaticResource FontFamily}"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"
-                                      FontSize="{StaticResource RegisterLabelFontSize}"
-                                      Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="3"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <ToggleButton x:Name="Reserved1"
-                                      Command="{x:Bind Reserved1Command, Mode=OneWay}"
-                                      Content="On/Off"
-                                      FontFamily="{StaticResource FontFamily}"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"
-                                      FontSize="{StaticResource RegisterLabelFontSize}"
-                                      Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="4"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <ToggleButton x:Name="Reserved2"
-                                      Command="{x:Bind Reserved2Command, Mode=OneWay}"
-                                      Content="On/Off"
-                                      FontFamily="{StaticResource FontFamily}"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"
-                                      FontSize="{StaticResource RegisterLabelFontSize}"
-                                      Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="5"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <ToggleButton x:Name="Reserved3"
-                                      Command="{x:Bind Reserved3Command, Mode=OneWay}"
-                                      Content="On/Off"
-                                      FontFamily="{StaticResource FontFamily}"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"
-                                      FontSize="{StaticResource RegisterLabelFontSize}"
-                                      Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="6"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <ToggleButton x:Name="configWriteConfiguration"
-                                      Command="{x:Bind WriteConfigurationCommand, Mode=OneWay}"
-                                      Content="On/Off"
-                                      FontFamily="{StaticResource FontFamily}"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"
-                                      FontSize="{StaticResource RegisterLabelFontSize}"
-                                      Margin="10,10,10,10" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="7"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <ToggleButton x:Name="configResetConfiguration"
-                                      Command="{x:Bind ResetConfigurationCommand, Mode=OneWay}"
-                                      Content="On/Off"
-                                      FontFamily="{StaticResource FontFamily}"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"
-                                      FontSize="{StaticResource RegisterLabelFontSize}"
-                                      Margin="10,10,10,10" />
-                    </Border>
-                </Grid>
-
-                <!-- Other Register Values -->
-                <Border Grid.Row="2"
-                        Grid.Column="0"
-                        BorderBrush="White"
-                        BorderThickness="0,0,0,0">
-                    <TextBlock Text="Other Register Values"
-                               FontFamily="{StaticResource FontFamily}"
-                               TextWrapping="WrapWholeWords"
-                               FontSize="24"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center" />
-                </Border>
-                <Grid Grid.Row="2"
-                      Grid.Column="1"
-                      HorizontalAlignment="Stretch">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                        <ColumnDefinition Width="1*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*" />
-                        <RowDefinition Height="1*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- Labels -->
-                    <Border Grid.Row="0"
-                            Grid.Column="0"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Interval (mS)"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="1"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Reading ID"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="2"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Upper Threshold (°C)"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="3"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Lower Threshold (°C)"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="4"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text="Start Delay (mS)"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="5"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                        <TextBlock Text=""
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource RegisterLabelFontSize}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="6"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-
-                    </Border>
-
-                    <Border Grid.Row="0"
-                            Grid.Column="7"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,1">
-                    </Border>
-
-                    <!-- Values -->
-                    <Border Grid.Row="1"
-                            Grid.Column="0"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,0">
-                        <Slider x:Name="interval"
-                                Grid.Column="0"
-                                Minimum="0"
-                                Maximum="10000"
-                                Margin="5,5,5,5"
-                                Value="{x:Bind Interval, Mode=TwoWay}">
-                            <Slider.Header>
-                                <TextBlock Text="{Binding ElementName=interval,Path=Value}"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           FontFamily="{StaticResource FontFamily}"
-                                           TextWrapping="WrapWholeWords"
-                                           FontSize="{StaticResource SliderFontSize}"
-                                           Margin="5,5,5,5" />
-                            </Slider.Header>
-                        </Slider>
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="1"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,0">
-                        <TextBlock Text="{x:Bind ReadingId, Mode=OneWay}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   FontFamily="{StaticResource FontFamily}"
-                                   TextWrapping="WrapWholeWords"
-                                   FontSize="{StaticResource SliderFontSize}"
-                                   Margin="5,5,5,5" />
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="2"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,0">
-                        <Slider Grid.Column="0"
-                                x:Name="upperThreshold"
-                                Minimum="0"
-                                Maximum="100"
-                                Margin="5,5,5,5"
-                                Value="{x:Bind UpperThreshold, Mode=TwoWay}">
-                            <Slider.Header>
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding ElementName=upperThreshold,Path=Value}"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           FontFamily="{StaticResource FontFamily}"
-                                           TextWrapping="WrapWholeWords"
-                                           FontSize="{StaticResource RegisterLabelFontSize}"
-                                           Margin="5,5,5,5" />
-                            </Slider.Header>
-                        </Slider>
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="3"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,0">
-                        <Slider Grid.Column="0"
-                                x:Name="lowerThreshold"
-                                Minimum="0"
-                                Maximum="100"
-                                Margin="5,5,5,5"
-                                Value="{x:Bind LowerThreshold, Mode=TwoWay}">
-                            <Slider.Header>
-
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding ElementName=lowerThreshold,Path=Value}"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           FontFamily="{StaticResource FontFamily}"
-                                           TextWrapping="WrapWholeWords"
-                                           FontSize="{StaticResource RegisterLabelFontSize}"
-                                           Margin="5,5,5,5" />
-                            </Slider.Header>
-                        </Slider>
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="4"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,0">
-                        <Slider Grid.Column="0"
-                                x:Name="startDelay"
-                                Minimum="250"
-                                Maximum="2500"
-                                Margin="5,5,5,5"
-                                Value="{x:Bind StartDelay, Mode=TwoWay}">
-                            <Slider.Header>
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding ElementName=startDelay,Path=Value}"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           FontFamily="{StaticResource FontFamily}"
-                                           TextWrapping="WrapWholeWords"
-                                           FontSize="{StaticResource RegisterLabelFontSize}"
-                                           Margin="5,5,5,5" />
-                            </Slider.Header>
-                        </Slider>
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="5"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,0">
-
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="6"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,0">
-
-                    </Border>
-
-                    <Border Grid.Row="1"
-                            Grid.Column="7"
-                            BorderBrush="White"
-                            BorderThickness="1,0,0,0">
-                        <Button x:Name="rebootDevice"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Command="{x:Bind RebootCommand, Mode=OneWay}">
-                            <Button.Content>
-                                <TextBlock Text="Reboot Device"
-                                           FontFamily="{StaticResource FontFamily}"
-                                           TextWrapping="WrapWholeWords"
-                                           FontSize="{StaticResource RegisterLabelFontSize}"
-                                           Margin="5,5,5,5" />
-                            </Button.Content>
-                        </Button>
-                    </Border>
-                </Grid>
-            </Grid>
-        </Border>
-    </Grid>
+					 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					 xmlns:local="using:Porrey.Tiny.Dht"
+					 xmlns:common="using:Porrey.Tiny.Dht.Common"
+					 xmlns:font="using:Windows.UI.Xaml.Media"
+					 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+					 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+					 mc:Ignorable="d"
+					 RequestedTheme="Dark">
+
+	<common:BindablePage.Resources>
+		<font:FontFamily x:Key="FontFamily">Segoe UI</font:FontFamily>
+		<x:Double x:Key="RegisterLabelFontSize">18</x:Double>
+		<x:Double x:Key="BitValueFontSize">54</x:Double>
+		<x:Double x:Key="SliderFontSize">16</x:Double>
+	</common:BindablePage.Resources>
+
+	<Grid Background="#444444">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="150" />
+			<RowDefinition Height="350" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<!-- Header -->
+		<Border Grid.Row="0"
+				BorderBrush="#5b9bd5"
+				BorderThickness="2"
+				Background="#c6974f"
+				Margin="15,15,15,0">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="150" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+
+				<Image Grid.Column="0"
+					   Source="ms-appx:///Assets/temperature-512.png"
+					   Margin="5,5,5,5" />
+
+				<TextBlock Grid.Column="1"
+						   Text="DHT Tiny Monitor"
+						   FontSize="74"
+						   FontFamily="{StaticResource FontFamily}"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Left" />
+
+			</Grid>
+		</Border>
+
+		<!-- Temperature/Humidity Display -->
+		<Border Grid.Row="1"
+				BorderBrush="#5b9bd5"
+				BorderThickness="2"
+				Margin="15,15,15,0">
+
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="1*" />
+					<ColumnDefinition Width="1*" />
+				</Grid.ColumnDefinitions>
+
+				<Grid.RowDefinitions>
+					<RowDefinition Height="100" />
+					<RowDefinition Height="1*" />
+				</Grid.RowDefinitions>
+
+				<!-- Temperature-->
+				<TextBlock Grid.Column="0"
+						   Grid.Row="0"
+						   Text="Temperature"
+						   FontSize="54"
+						   FontFamily="{StaticResource FontFamily}"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Center" />
+
+				<TextBlock x:Name="temperature"
+						   Grid.Column="0"
+						   Grid.Row="1"
+						   Text="{x:Bind Temperature, Mode=OneWay}"
+						   FontSize="150"
+						   FontFamily="{StaticResource FontFamily}"
+						   Foreground="#fcc064"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Center" />
+
+				<!-- Humidity -->
+				<TextBlock Grid.Column="1"
+						   Grid.Row="0"
+						   Text="Humidity"
+						   FontSize="54"
+						   FontFamily="{StaticResource FontFamily}"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Center" />
+
+				<TextBlock x:Name="humidity"
+						   Grid.Column="1"
+						   Grid.Row="1"
+						   Text="{x:Bind Humidity, Mode=OneWay}"
+						   FontSize="150"
+						   FontFamily="{StaticResource FontFamily}"
+						   Foreground="#fcc064"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Center" />
+			</Grid>
+
+		</Border>
+
+		<!-- Control Panel -->
+		<Border Grid.Row="2"
+				BorderBrush="#5b9bd5"
+				BorderThickness="2"
+				Margin="15,15,15,15">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="200" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+
+				<Grid.RowDefinitions>
+					<RowDefinition Height="1*" />
+					<RowDefinition Height="1*" />
+					<RowDefinition Height="1*" />
+				</Grid.RowDefinitions>
+
+				<!-- Status Register -->
+				<Border Grid.Row="0"
+						Grid.Column="0"
+						BorderBrush="White"
+						BorderThickness="0,0,0,1">
+					<TextBlock Text="8-bit Status Register Bits"
+							   FontFamily="{StaticResource FontFamily}"
+							   TextWrapping="WrapWholeWords"
+							   FontSize="24"
+							   VerticalAlignment="Center"
+							   HorizontalAlignment="Center" />
+				</Border>
+				<Grid Grid.Row="0"
+					  Grid.Column="1"
+					  HorizontalAlignment="Stretch">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+					</Grid.ColumnDefinitions>
+
+					<Grid.RowDefinitions>
+						<RowDefinition Height="1*" />
+						<RowDefinition Height="1*" />
+					</Grid.RowDefinitions>
+
+					<!-- Labels -->
+					<Border Grid.Row="0"
+							Grid.Column="0"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Enabled"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="1"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Upper Threshold Exceeded"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="2"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Lower Threshold Exceeded"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="3"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Reserved"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="4"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Reserved"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="5"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Configuration Saved"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="6"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Read Error"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="7"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Write Error"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<!-- Values -->
+					<Border Grid.Row="1"
+							Grid.Column="0"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+
+						<TextBlock x:Name="statusEnabled"
+								   Text="{x:Bind StatusEnabled, Mode=OneWay}"
+								   FontFamily="{StaticResource FontFamily}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontSize="{StaticResource BitValueFontSize}"
+								   Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="1"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock x:Name="statusUpperThresholdExceeded"
+								   Text="{x:Bind StatusUpperThresholdExceeded, Mode=OneWay}"
+								   FontFamily="{StaticResource FontFamily}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontSize="{StaticResource BitValueFontSize}"
+								   Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="2"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock x:Name="statusLowerThresholdExceeded"
+								   Text="{x:Bind StatusLowerThresholdExceeded, Mode=OneWay}"
+								   FontFamily="{StaticResource FontFamily}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontSize="{StaticResource BitValueFontSize}"
+								   Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="3"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock  x:Name="statusReserved1"
+									Text="{x:Bind StatusReserved1, Mode=OneWay}"
+									FontFamily="{StaticResource FontFamily}"
+									VerticalAlignment="Center"
+									HorizontalAlignment="Center"
+									FontSize="{StaticResource BitValueFontSize}"
+									Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="4"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock  x:Name="statusReserved2"
+									Text="{x:Bind StatusReserved2, Mode=OneWay}"
+									FontFamily="{StaticResource FontFamily}"
+									VerticalAlignment="Center"
+									HorizontalAlignment="Center"
+									FontSize="{StaticResource BitValueFontSize}"
+									Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="5"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock x:Name="statusConfigurationSaved"
+								   Text="{x:Bind StatusConfigurationSaved, Mode=OneWay}"
+								   FontFamily="{StaticResource FontFamily}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontSize="{StaticResource BitValueFontSize}"
+								   Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="6"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock x:Name="statusReadError"
+								   Text="{x:Bind StatusReadError, Mode=OneWay}"
+								   FontFamily="{StaticResource FontFamily}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontSize="{StaticResource BitValueFontSize}"
+								   Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="7"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock x:Name="statusWriteError"
+								   Text="{x:Bind StatusWriteError, Mode=OneWay}"
+								   FontFamily="{StaticResource FontFamily}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontSize="{StaticResource BitValueFontSize}"
+								   Margin="10,10,10,10" />
+					</Border>
+				</Grid>
+
+				<!-- Configuration Register -->
+				<Border Grid.Row="1"
+						Grid.Column="0"
+						BorderBrush="White"
+						BorderThickness="0,0,0,1">
+					<TextBlock Text="8-bit Configuration Register Bits"
+							   FontFamily="{StaticResource FontFamily}"
+							   TextWrapping="WrapWholeWords"
+							   FontSize="24"
+							   VerticalAlignment="Center"
+							   HorizontalAlignment="Center" />
+				</Border>
+				<Grid Grid.Row="1"
+					  Grid.Column="1"
+					  HorizontalAlignment="Stretch">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+					</Grid.ColumnDefinitions>
+
+					<Grid.RowDefinitions>
+						<RowDefinition Height="1*" />
+						<RowDefinition Height="1*" />
+					</Grid.RowDefinitions>
+
+					<!-- Labels -->
+					<Border Grid.Row="0"
+							Grid.Column="0"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Enabled"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="1"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Threshold Enabled"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="2"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Trigger Reading"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="3"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Reserved"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="4"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Reserved"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="5"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Reserved"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="6"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Write Configuration"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="7"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Reset Configuration"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<!-- Values -->
+					<Border Grid.Row="1"
+							Grid.Column="0"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<ToggleButton x:Name="configEnabled"
+									  Command="{x:Bind EnabledCommand, Mode=OneWay}"
+									  Content="On/Off"
+									  FontFamily="{StaticResource FontFamily}"
+									  VerticalAlignment="Center"
+									  HorizontalAlignment="Center"
+									  FontSize="{StaticResource RegisterLabelFontSize}"
+									  Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="1"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<ToggleButton x:Name="configThresholdEnabled"
+									  Command="{x:Bind EnableThresholdsCommand, Mode=OneWay}"
+									  Content="On/Off"
+									  FontFamily="{StaticResource FontFamily}"
+									  VerticalAlignment="Center"
+									  HorizontalAlignment="Center"
+									  FontSize="{StaticResource RegisterLabelFontSize}"
+									  Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="2"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<ToggleButton x:Name="configTriggerReading"
+									  Command="{x:Bind TriggerReadingCommand, Mode=OneWay}"
+									  Content="On/Off"
+									  FontFamily="{StaticResource FontFamily}"
+									  VerticalAlignment="Center"
+									  HorizontalAlignment="Center"
+									  FontSize="{StaticResource RegisterLabelFontSize}"
+									  Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="3"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<ToggleButton x:Name="Reserved1"
+									  Command="{x:Bind Reserved1Command, Mode=OneWay}"
+									  Content="On/Off"
+									  FontFamily="{StaticResource FontFamily}"
+									  VerticalAlignment="Center"
+									  HorizontalAlignment="Center"
+									  FontSize="{StaticResource RegisterLabelFontSize}"
+									  Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="4"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<ToggleButton x:Name="Reserved2"
+									  Command="{x:Bind Reserved2Command, Mode=OneWay}"
+									  Content="On/Off"
+									  FontFamily="{StaticResource FontFamily}"
+									  VerticalAlignment="Center"
+									  HorizontalAlignment="Center"
+									  FontSize="{StaticResource RegisterLabelFontSize}"
+									  Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="5"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<ToggleButton x:Name="Reserved3"
+									  Command="{x:Bind Reserved3Command, Mode=OneWay}"
+									  Content="On/Off"
+									  FontFamily="{StaticResource FontFamily}"
+									  VerticalAlignment="Center"
+									  HorizontalAlignment="Center"
+									  FontSize="{StaticResource RegisterLabelFontSize}"
+									  Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="6"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<ToggleButton x:Name="configWriteConfiguration"
+									  Command="{x:Bind WriteConfigurationCommand, Mode=OneWay}"
+									  Content="On/Off"
+									  FontFamily="{StaticResource FontFamily}"
+									  VerticalAlignment="Center"
+									  HorizontalAlignment="Center"
+									  FontSize="{StaticResource RegisterLabelFontSize}"
+									  Margin="10,10,10,10" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="7"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<ToggleButton x:Name="configResetConfiguration"
+									  Command="{x:Bind ResetConfigurationCommand, Mode=OneWay}"
+									  Content="On/Off"
+									  FontFamily="{StaticResource FontFamily}"
+									  VerticalAlignment="Center"
+									  HorizontalAlignment="Center"
+									  FontSize="{StaticResource RegisterLabelFontSize}"
+									  Margin="10,10,10,10" />
+					</Border>
+				</Grid>
+
+				<!-- Other Register Values -->
+				<Border Grid.Row="2"
+						Grid.Column="0"
+						BorderBrush="White"
+						BorderThickness="0,0,0,0">
+					<TextBlock Text="Other Register Values"
+							   FontFamily="{StaticResource FontFamily}"
+							   TextWrapping="WrapWholeWords"
+							   FontSize="24"
+							   VerticalAlignment="Center"
+							   HorizontalAlignment="Center" />
+				</Border>
+				<Grid Grid.Row="2"
+					  Grid.Column="1"
+					  HorizontalAlignment="Stretch">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+						<ColumnDefinition Width="1*" />
+					</Grid.ColumnDefinitions>
+
+					<Grid.RowDefinitions>
+						<RowDefinition Height="1*" />
+						<RowDefinition Height="1*" />
+					</Grid.RowDefinitions>
+
+					<!-- Labels -->
+					<Border Grid.Row="0"
+							Grid.Column="0"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Interval (mS)"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="1"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Reading ID"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="2"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Upper Threshold (°C)"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="3"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Lower Threshold (°C)"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="4"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text="Start Delay (mS)"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="5"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+						<TextBlock Text=""
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center" />
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="6"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+
+					</Border>
+
+					<Border Grid.Row="0"
+							Grid.Column="7"
+							BorderBrush="White"
+							BorderThickness="1,0,0,1">
+					</Border>
+
+					<!-- Values -->
+					<Border Grid.Row="1"
+							Grid.Column="0"
+							BorderBrush="White"
+							BorderThickness="1,0,0,0">
+						<TextBlock Text="{x:Bind Interval, Mode=OneWay}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource SliderFontSize}"
+								   Margin="5,5,5,5" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="1"
+							BorderBrush="White"
+							BorderThickness="1,0,0,0">
+						<TextBlock Text="{x:Bind ReadingId, Mode=OneWay}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource SliderFontSize}"
+								   Margin="5,5,5,5" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="2"
+							BorderBrush="White"
+							BorderThickness="1,0,0,0">
+						<TextBlock Grid.Column="1"
+								   Text="{x:Bind UpperThreshold, Mode=OneWay}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   Margin="5,5,5,5" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="3"
+							BorderBrush="White"
+							BorderThickness="1,0,0,0">
+						<TextBlock Grid.Column="1"
+								   Text="{x:Bind LowerThreshold, Mode=OneWay}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   Margin="5,5,5,5" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="4"
+							BorderBrush="White"
+							BorderThickness="1,0,0,0">
+						<TextBlock Grid.Column="1"
+								   Text="{x:Bind StartDelay, Mode=OneWay}"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   FontFamily="{StaticResource FontFamily}"
+								   TextWrapping="WrapWholeWords"
+								   FontSize="{StaticResource RegisterLabelFontSize}"
+								   Margin="5,5,5,5" />
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="5"
+							BorderBrush="White"
+							BorderThickness="1,0,0,0">
+
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="6"
+							BorderBrush="White"
+							BorderThickness="1,0,0,0">
+
+					</Border>
+
+					<Border Grid.Row="1"
+							Grid.Column="7"
+							BorderBrush="White"
+							BorderThickness="1,0,0,0">
+						<Button x:Name="rebootDevice"
+								VerticalAlignment="Center"
+								HorizontalAlignment="Center"
+								Command="{x:Bind SettingsCommand, Mode=OneWay}">
+							<Button.Content>
+								<TextBlock Text="Settings"
+										   FontFamily="{StaticResource FontFamily}"
+										   TextWrapping="WrapWholeWords"
+										   FontSize="{StaticResource RegisterLabelFontSize}"
+										   Margin="5,5,5,5" />
+							</Button.Content>
+						</Button>
+					</Border>
+				</Grid>
+			</Grid>
+		</Border>
+	</Grid>
 </common:BindablePage>
