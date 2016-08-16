@@ -129,7 +129,7 @@
 						Grid.Column="0"
 						BorderBrush="White"
 						BorderThickness="0,0,0,1">
-					<TextBlock Text="8-bit Status Register Bits"
+					<TextBlock Text="8-bit Status Register"
 							   FontFamily="{StaticResource FontFamily}"
 							   TextWrapping="WrapWholeWords"
 							   FontSize="24"
@@ -160,12 +160,13 @@
 							Grid.Column="0"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<TextBlock Text="Enabled"
+						<TextBlock Text="Enabled (LSB)"
 								   FontFamily="{StaticResource FontFamily}"
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -177,7 +178,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -189,7 +191,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -201,7 +204,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -213,7 +217,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -225,7 +230,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -237,19 +243,21 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
 							Grid.Column="7"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<TextBlock Text="Write Error"
+						<TextBlock Text="Write Error (MSB)"
 								   FontFamily="{StaticResource FontFamily}"
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<!-- Values -->
@@ -364,7 +372,7 @@
 						Grid.Column="0"
 						BorderBrush="White"
 						BorderThickness="0,0,0,1">
-					<TextBlock Text="8-bit Configuration Register Bits"
+					<TextBlock Text="8-bit Configuration Register"
 							   FontFamily="{StaticResource FontFamily}"
 							   TextWrapping="WrapWholeWords"
 							   FontSize="24"
@@ -395,12 +403,13 @@
 							Grid.Column="0"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<TextBlock Text="Enabled"
+						<TextBlock Text="Enabled (LSB)"
 								   FontFamily="{StaticResource FontFamily}"
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -412,7 +421,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -424,7 +434,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -436,7 +447,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -448,7 +460,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -460,7 +473,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -472,19 +486,21 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
 							Grid.Column="7"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<TextBlock Text="Reset Configuration"
+						<TextBlock Text="Reset Configuration (MSB)"
 								   FontFamily="{StaticResource FontFamily}"
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<!-- Values -->
@@ -534,7 +550,7 @@
 							Grid.Column="3"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<ToggleButton x:Name="Reserved1"
+						<ToggleButton x:Name="reserved1"
 									  Command="{x:Bind Reserved1Command, Mode=OneWay}"
 									  Content="On/Off"
 									  FontFamily="{StaticResource FontFamily}"
@@ -548,7 +564,7 @@
 							Grid.Column="4"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<ToggleButton x:Name="Reserved2"
+						<ToggleButton x:Name="reserved2"
 									  Command="{x:Bind Reserved2Command, Mode=OneWay}"
 									  Content="On/Off"
 									  FontFamily="{StaticResource FontFamily}"
@@ -562,7 +578,7 @@
 							Grid.Column="5"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<ToggleButton x:Name="Reserved3"
+						<ToggleButton x:Name="reserved3"
 									  Command="{x:Bind Reserved3Command, Mode=OneWay}"
 									  Content="On/Off"
 									  FontFamily="{StaticResource FontFamily}"
@@ -576,7 +592,7 @@
 							Grid.Column="6"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<ToggleButton x:Name="configWriteConfiguration"
+						<ToggleButton x:Name="writeConfiguration"
 									  Command="{x:Bind WriteConfigurationCommand, Mode=OneWay}"
 									  Content="On/Off"
 									  FontFamily="{StaticResource FontFamily}"
@@ -590,7 +606,7 @@
 							Grid.Column="7"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<ToggleButton x:Name="configResetConfiguration"
+						<ToggleButton x:Name="resetConfiguration"
 									  Command="{x:Bind ResetConfigurationCommand, Mode=OneWay}"
 									  Content="On/Off"
 									  FontFamily="{StaticResource FontFamily}"
@@ -642,7 +658,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -654,7 +671,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -666,7 +684,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -678,7 +697,8 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
@@ -690,19 +710,14 @@
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
 								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
+								   HorizontalAlignment="Center"
+								   Margin="10,0,10,0" />
 					</Border>
 
 					<Border Grid.Row="0"
 							Grid.Column="5"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<TextBlock Text=""
-								   FontFamily="{StaticResource FontFamily}"
-								   TextWrapping="WrapWholeWords"
-								   FontSize="{StaticResource RegisterLabelFontSize}"
-								   VerticalAlignment="Center"
-								   HorizontalAlignment="Center" />
 					</Border>
 
 					<Border Grid.Row="0"

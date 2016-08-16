@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Porrey.Tiny.Dht
 {
-    public sealed partial class MainPage : BindablePage
+	public sealed partial class MainPage : BindablePage
 	{
 		private DhtTiny _dhtTiny = null;
 		private DispatcherTimer _timer = new DispatcherTimer();
@@ -25,23 +25,23 @@ namespace Porrey.Tiny.Dht
 
 		protected async override void OnNavigatedTo(NavigationEventArgs e)
 		{
-            try
-            {
-                // ***
-                // *** Setup the DhtTiny instance.
-                // ***
-                _dhtTiny = new DhtTiny(0x26);
-                await _dhtTiny.InitializeAsync();
+			try
+			{
+				// ***
+				// *** Setup the DhtTiny instance.
+				// ***
+				_dhtTiny = new DhtTiny(0x26);
+				await _dhtTiny.InitializeAsync();
 
-                // ***
-                // *** Start the timer.
-                // ***
-                _timer.Start();
-            }
-            catch(Exception ex)
-            {
+				// ***
+				// *** Start the timer.
+				// ***
+				_timer.Start();
+			}
+			catch (Exception ex)
+			{
 
-            }
+			}
 
 			base.OnNavigatedTo(e);
 		}
@@ -50,43 +50,46 @@ namespace Porrey.Tiny.Dht
 		{
 			try
 			{
-				_dhtTiny.Refresh();
+				lock (_dhtTiny)
+				{
+					_dhtTiny.Refresh();
 
-				this.Interval = _dhtTiny.Interval;
-				this.ReadingId = _dhtTiny.ReadingId;
-				this.Temperature = string.Format("{0:0.0}°C", _dhtTiny.Temperature);
-				this.Humidity = string.Format("{0:0.0}%", _dhtTiny.Humidity);
-				this.UpperThreshold = _dhtTiny.UpperThreshold;
-				this.LowerThreshold = _dhtTiny.LowerThreshold;
-				this.StartDelay = _dhtTiny.StartDelay;
+					this.Interval = _dhtTiny.Interval;
+					this.ReadingId = _dhtTiny.ReadingId;
+					this.Temperature = string.Format("{0:0.0}°C", _dhtTiny.Temperature);
+					this.Humidity = string.Format("{0:0.0}%", _dhtTiny.Humidity);
+					this.UpperThreshold = _dhtTiny.UpperThreshold;
+					this.LowerThreshold = _dhtTiny.LowerThreshold;
+					this.StartDelay = _dhtTiny.StartDelay;
 
-				this.StatusEnabled = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.IsEnabled) ? "1" : "0";
-				this.StatusUpperThresholdExceeded = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.UpperThresholdExceeded) ? "1" : "0";
-				this.StatusLowerThresholdExceeded = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.LowerThresholdExceeded) ? "1" : "0";
-				this.StatusReserved1 = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.Reserved1) ? "1" : "0";
-				this.StatusReserved2 = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.Reserved2) ? "1" : "0";
-				this.StatusConfigurationSaved = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.ConfigSaved) ? "1" : "0";
-				this.StatusReadError = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.ReadError) ? "1" : "0";
-				this.StatusWriteError = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.WriteError) ? "1" : "0";
+					this.StatusEnabled = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.IsEnabled) ? "1" : "0";
+					this.StatusUpperThresholdExceeded = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.UpperThresholdExceeded) ? "1" : "0";
+					this.StatusLowerThresholdExceeded = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.LowerThresholdExceeded) ? "1" : "0";
+					this.StatusReserved1 = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.Reserved1) ? "1" : "0";
+					this.StatusReserved2 = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.Reserved2) ? "1" : "0";
+					this.StatusConfigurationSaved = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.ConfigSaved) ? "1" : "0";
+					this.StatusReadError = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.ReadError) ? "1" : "0";
+					this.StatusWriteError = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.WriteError) ? "1" : "0";
 
-				this.configEnabled.IsChecked = _dhtTiny.IsEnabled;
-				this.configThresholdEnabled.IsChecked = _dhtTiny.ThresholdsAreEnabled;
-				this.configTriggerReading.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.TriggerReading) ? true : false;
-				this.Reserved1.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.Reserved1) ? true : false;
-				this.Reserved2.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.Reserved2) ? true : false;
-				this.Reserved3.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.Reserved3) ? true : false;
-				this.configWriteConfiguration.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.WriteConfig) ? true : false;
-				this.configResetConfiguration.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.ResetConfig) ? true : false;
+					this.configEnabled.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.SensorEnabled) ? true : false;
+					this.configThresholdEnabled.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.ThresholdEnabled) ? true : false;
+					this.configTriggerReading.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.TriggerReading) ? true : false;
+					this.reserved1.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.Reserved1) ? true : false;
+					this.reserved2.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.Reserved2) ? true : false;
+					this.reserved3.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.Reserved3) ? true : false;
+					this.writeConfiguration.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.WriteConfig) ? true : false;
+					this.resetConfiguration.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.ResetConfig) ? true : false;
 
-				this.EnabledCommand.RaiseCanExecuteChanged();
-				this.EnableThresholdsCommand.RaiseCanExecuteChanged();
-				this.TriggerReadingCommand.RaiseCanExecuteChanged();
-				this.Reserved1Command.RaiseCanExecuteChanged();
-				this.Reserved2Command.RaiseCanExecuteChanged();
-				this.Reserved3Command.RaiseCanExecuteChanged();
-				this.WriteConfigurationCommand.RaiseCanExecuteChanged();
-				this.ResetConfigurationCommand.RaiseCanExecuteChanged();
-				this.RebootCommand.RaiseCanExecuteChanged();
+					this.EnabledCommand.RaiseCanExecuteChanged();
+					this.EnableThresholdsCommand.RaiseCanExecuteChanged();
+					this.TriggerReadingCommand.RaiseCanExecuteChanged();
+					this.Reserved1Command.RaiseCanExecuteChanged();
+					this.Reserved2Command.RaiseCanExecuteChanged();
+					this.Reserved3Command.RaiseCanExecuteChanged();
+					this.WriteConfigurationCommand.RaiseCanExecuteChanged();
+					this.ResetConfigurationCommand.RaiseCanExecuteChanged();
+					this.SettingsCommand.RaiseCanExecuteChanged();
+				}
 			}
 			catch (Exception ex)
 			{
@@ -344,7 +347,18 @@ namespace Porrey.Tiny.Dht
 
 		private void OnEnabledCommand()
 		{
-			_dhtTiny.IsEnabled = !_dhtTiny.IsEnabled;
+			lock (_dhtTiny)
+			{
+				try
+				{
+					_timer.Stop();
+					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.SensorEnabled, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.SensorEnabled));
+				}
+				finally
+				{
+					_timer.Start();
+				}
+			}
 		}
 
 		private bool OnCanEnableThresholdsCommand()
@@ -354,7 +368,18 @@ namespace Porrey.Tiny.Dht
 
 		private void OnEnableThresholdsCommand()
 		{
-			_dhtTiny.ThresholdsAreEnabled = !_dhtTiny.ThresholdsAreEnabled;
+			lock (_dhtTiny)
+			{
+				try
+				{
+					_timer.Stop();
+					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.ThresholdEnabled, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.ThresholdEnabled));
+				}
+				finally
+				{
+					_timer.Start();
+				}
+			}
 		}
 
 		private bool OnCanTriggerReadingCommand()
@@ -364,6 +389,18 @@ namespace Porrey.Tiny.Dht
 
 		private void OnTriggerReadingCommand()
 		{
+			lock (_dhtTiny)
+			{
+				try
+				{
+					_timer.Stop();
+					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.TriggerReading, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.TriggerReading));
+				}
+				finally
+				{
+					_timer.Start();
+				}
+			}
 		}
 
 		private bool OnCanReserved1Command()
@@ -373,6 +410,18 @@ namespace Porrey.Tiny.Dht
 
 		private void OnReserved1Command()
 		{
+			lock (_dhtTiny)
+			{
+				try
+				{
+					_timer.Stop();
+					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.Reserved1, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.Reserved1));
+				}
+				finally
+				{
+					_timer.Start();
+				}
+			}
 		}
 
 		private bool OnCanReserved2Command()
@@ -382,6 +431,18 @@ namespace Porrey.Tiny.Dht
 
 		private void OnReserved2Command()
 		{
+			lock (_dhtTiny)
+			{
+				try
+				{
+					_timer.Stop();
+					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.Reserved2, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.Reserved2));
+				}
+				finally
+				{
+					_timer.Start();
+				}
+			}
 		}
 
 		private bool OnCanReserved3Command()
@@ -391,6 +452,18 @@ namespace Porrey.Tiny.Dht
 
 		private void OnReserved3Command()
 		{
+			lock (_dhtTiny)
+			{
+				try
+				{
+					_timer.Stop();
+					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.Reserved3, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.Reserved3));
+				}
+				finally
+				{
+					_timer.Start();
+				}
+			}
 		}
 
 		private bool OnCanWriteConfigurationCommand()
@@ -400,6 +473,18 @@ namespace Porrey.Tiny.Dht
 
 		private void OnWriteConfigurationCommand()
 		{
+			lock (_dhtTiny)
+			{
+				try
+				{
+					_timer.Stop();
+					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.WriteConfig, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.WriteConfig));
+				}
+				finally
+				{
+					_timer.Start();
+				}
+			}
 		}
 
 		private bool OnCanResetConfigurationCommand()
@@ -409,6 +494,18 @@ namespace Porrey.Tiny.Dht
 
 		private void OnResetConfigurationCommand()
 		{
+			lock (_dhtTiny)
+			{
+				try
+				{
+					_timer.Stop();
+					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.ResetConfig, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.ResetConfig));
+				}
+				finally
+				{
+					_timer.Start();
+				}
+			}
 		}
 		#endregion
 	}

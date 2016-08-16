@@ -3,7 +3,7 @@ using Windows.Devices.I2c;
 
 namespace Porrey.Uwp.IoT.Sensors.Tiny
 {
-    public class DhtTiny : I2c
+	public class DhtTiny : I2c
 	{
 		private const byte REGISTER_READALL = 0;
 		private const byte REGISTER_TEMPERATURE = 1;
@@ -53,16 +53,6 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 		{
 		}
 
-		public float Temperature { get; private set; }
-		public float Humidity { get; private set; }
-		public uint Interval { get; private set; }
-		public uint ReadingId { get; private set; }
-		public float UpperThreshold { get; private set; }
-		public float LowerThreshold { get; private set; }
-		public uint StartDelay { get; private set; }
-		public byte Configuration { get; private set; }
-		public byte Status { get; private set; }
-
 		public bool Refresh()
 		{
 			bool returnValue = false;
@@ -98,6 +88,21 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
+		#region Cache Members
+		// ***
+		// *** These members access the cached values that
+		// *** get updated with each call to Refresh();
+		// ***
+		public float Temperature { get; private set; }
+		public float Humidity { get; private set; }
+		public uint Interval { get; private set; }
+		public uint ReadingId { get; private set; }
+		public float UpperThreshold { get; private set; }
+		public float LowerThreshold { get; private set; }
+		public uint StartDelay { get; private set; }
+		public byte Configuration { get; private set; }
+		public byte Status { get; private set; }
+
 		public bool GetStatusBit(DhtTiny.StatusBit bitIndex)
 		{
 			return Bit.Get(this.Status, (byte)bitIndex);
@@ -112,12 +117,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 		{
 			get
 			{
-				return ((this.GetConfiguration() & (1 << (byte)ConfigBit.SensorEnabled)) == 1) ? true : false;
-			}
-			set
-			{
-				byte config = Bit.Set(this.GetConfiguration(), (byte)ConfigBit.SensorEnabled, value);
-				this.SetConfiguration(config);
+				return this.GetConfigurationBit(ConfigBit.SensorEnabled);
 			}
 		}
 
@@ -125,13 +125,36 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 		{
 			get
 			{
+				return this.GetConfigurationBit(ConfigBit.ThresholdEnabled);
+			}
+		}
+		#endregion
+
+		#region Real-time Members
+		// ***
+		// *** These methods are dynamic - they communicate with the
+		// *** device each time they are called.
+		// ***
+		public bool GetIsEnabled()
+		{
+			return ((this.GetConfiguration() & (1 << (byte)ConfigBit.SensorEnabled)) == 1) ? true : false;
+		}
+
+		public void SetIsEnabled(bool enable)
+		{
+			byte config = Bit.Set(this.GetConfiguration(), (byte)ConfigBit.SensorEnabled, enable);
+			this.SetConfiguration(config);
+		}
+
+		public bool GetThresholdsAreEnabled()
+		{
 				return ((this.GetConfiguration() & (1 << (byte)ConfigBit.ThresholdEnabled)) == 1) ? true : false;
-			}
-			set
-			{
-				byte config = Bit.Set(this.GetConfiguration(), (byte)ConfigBit.ThresholdEnabled, value);
+		}
+
+		public void SetThresholdsAreEnabled(bool enable)
+		{
+				byte config = Bit.Set(this.GetConfiguration(), (byte)ConfigBit.ThresholdEnabled, enable);
 				this.SetConfiguration(config);
-			}
 		}
 
 		public float GetTemperature()
@@ -428,6 +451,11 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
+		public bool GetConfiguration(byte position)
+		{
+			return Bit.Get(this.GetConfiguration(), position);
+		}
+
 		public bool SetConfiguration(byte value)
 		{
 			bool returnValue = false;
@@ -482,5 +510,6 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 
 			return returnValue;
 		}
+		#endregion
 	}
 }

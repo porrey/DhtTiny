@@ -286,7 +286,7 @@ void requestEvent()
   }
 
   // ***
-  // *** Reset the request cunt to 0.
+  // *** Reset the request count to 0.
   // ***
   _requestCount = 0;
 }

@@ -1,10 +1,14 @@
-﻿namespace Porrey.Uwp.IoT.Sensors.Tiny
+﻿using System;
+
+namespace Porrey.Uwp.IoT.Sensors.Tiny
 {
 	public static class Bit
 	{
 		public static bool Get(byte value, byte bitIndex)
 		{
-			return ((value & (1 << bitIndex)) == 1);
+			int mask = (1 << bitIndex);
+			int maskedValue = (value & mask);
+			return (maskedValue == mask);
 		}
 
 		public static byte Set(byte value, byte bitIndex, bool bit)
