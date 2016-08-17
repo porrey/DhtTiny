@@ -4,13 +4,6 @@
 #include "Registers.h"
 
 // ***
-// *** Headers
-// ***
-void saveUint32(uint8_t address, uint8_t registerId);
-void saveFloat(uint8_t address, uint8_t registerId);
-uint32_t calculateCrc();
-
-// ***
 // *** Defines a signature that can be used to
 // *** indicate that the configuration has been saved
 // *** to EEPROM.
@@ -19,16 +12,19 @@ uint32_t calculateCrc();
 
 // ***
 // *** Not all of the configuration bits can be saved. This
-// *** mask ou those bits that should not be saved.
+// *** will mask out the bits that should not be saved.
 // ***
 #define CONFIG_MASK   B00000011
+
+#define START_REGISTER      REGISTER_INTERVAL
+#define TOTAL_LENGTH        17
 
 void resetConfiguration()
 {
   // ***
   // *** Set
   // ***
-  for (int i = 0 ; i < (REGISTER_TOTAL_SIZE + 1) ; i++)
+  for (int i = 0 ; i < (TOTAL_LENGTH + 1) ; i++)
   {
     if (EEPROM.read(i) != 0)
     {
@@ -48,25 +44,24 @@ void saveConfiguration()
   // *** Write the signature to the first byte of memory to indicate
   // *** that the configuration was saved.
   // ***
-  EEPROM.write(REGISTER_TOTAL_SIZE, SIGNATURE);
+  EEPROM.update(0, SIGNATURE);
 
   // ***
-  // *** Save the registers.
+  // *** Copy a portion of the registers to the ERPROM.
   // ***
-  saveUint32(REGISTER_INTERVAL, REGISTER_INTERVAL);
-  saveFloat(REGISTER_UPPER_THRESHOLD, REGISTER_UPPER_THRESHOLD);
-  saveFloat(REGISTER_LOWER_THRESHOLD, REGISTER_LOWER_THRESHOLD);
-  saveUint32(REGISTER_START_DELAY, REGISTER_START_DELAY);
-  EEPROM.update(REGISTER_CONFIG, _registers[REGISTER_CONFIG]);
+  for (int i = 1 ; i < TOTAL_LENGTH - 1 ; i++)
+  {
+    EEPROM.update(i, _registers[START_REGISTER + (i - 1)]);
+  }
 
   // ***
-  // *** Calculate a CRC and store it after the SIGNATURE byte.
+  // *** Save the config bits.
   // ***
-  uint32_t crc = calculateCrc();
-  saveUint32(REGISTER_TOTAL_SIZE + 1, crc);
+  EEPROM.update(TOTAL_LENGTH - 1, _registers[REGISTER_CONFIG] & CONFIG_MASK);
 
   // ***
-  // *** Set the status bit.
+  // *** Set the status bit to indicate that there
+  // *** is a valid saved confgiuration.
   // ***
   setRegisterBit(REGISTER_STATUS, STATUS_CONFIG_SAVED, 1);
 }
@@ -78,130 +73,30 @@ bool restoreConfiguration()
   // ***
   // *** Check the EEPROM for the signature.
   // ***
-  uint8_t signature = EEPROM.read(REGISTER_TOTAL_SIZE);
+  uint8_t signature = EEPROM.read(0);
 
   if (signature == SIGNATURE)
   {
     // ***
-    // *** Calculate a CRC.
+    // *** Copy a portion of the registers from the ERPROM.
     // ***
-    uint32_t calculatedCrc = calculateCrc();
-
-    // ***
-    // *** Read the CRC from EEPROM.
-    // ***
-    uint32_t storedCrc = 0;
-    EEPROM.get(REGISTER_TOTAL_SIZE + 1, storedCrc);
-
-    // ***
-    // *** Check the stored value against the calculated value.
-    // ***
-    if (storedCrc == calculatedCrc)
+    for (int i = 1 ; i < TOTAL_LENGTH - 1 ; i++)
     {
-      // ***
-      // *** It is safe to restore.
-      // ***
-      EEPROM.get(REGISTER_INTERVAL, _registers[REGISTER_INTERVAL]);
-      EEPROM.get(REGISTER_UPPER_THRESHOLD, _registers[REGISTER_UPPER_THRESHOLD]);
-      EEPROM.get(REGISTER_LOWER_THRESHOLD, _registers[REGISTER_LOWER_THRESHOLD]);
-      EEPROM.get(REGISTER_START_DELAY, _registers[REGISTER_START_DELAY]);
-      EEPROM.get(REGISTER_CONFIG, _registers[REGISTER_CONFIG]);
-
-      // ***
-      // *** Set the status bit.
-      // ***
-      setRegisterBit(REGISTER_STATUS, STATUS_CONFIG_SAVED, 1);
-      returnValue = true;
+      _registers[START_REGISTER + (i - 1)] = EEPROM.read(i);
     }
+
+    // ***
+    // *** Restore the config bits.
+    // ***
+    _registers[REGISTER_CONFIG] = EEPROM.read(TOTAL_LENGTH - 1);
+
+    // ***
+    // *** Set the status bit.
+    // ***
+    setRegisterBit(REGISTER_STATUS, STATUS_CONFIG_SAVED, 1);
+    returnValue = true;
   }
 
   return returnValue;
-}
-
-void saveUint32(uint8_t address, uint8_t registerId)
-{
-  // ***
-  // *** Get the current register value.
-  // ***
-  uint32_t value1 = readUint32(REGISTER_INTERVAL);
-
-  // ***
-  // *** Define a variable to retrieve the current
-  // *** value from EEPROM.
-  // ***
-  uint32_t value2 = 0;
-
-  // ***
-  // *** Read the current value.
-  // ***
-  EEPROM.get(address, value2);
-
-  // ***
-  // *** Check if the current value is different
-  // *** from the new value.
-  // ***
-  if (value1 != value2)
-  {
-    // ***
-    // *** The value is different so update EEPROM.
-    // ***
-    EEPROM.put(address, value1);
-  }
-}
-
-void saveFloat(uint8_t address, uint8_t registerId)
-{
-  // ***
-  // *** Get the current register value.
-  // ***
-  float value1 = readUint32(REGISTER_INTERVAL);
-
-  // ***
-  // *** Define a variable to retrieve the current
-  // *** value from EEPROM.
-  // ***
-  float value2 = 0;
-
-  // ***
-  // *** Read the current value.
-  // ***
-  EEPROM.get(address, value2);
-
-  // ***
-  // *** Check if the current value is different
-  // *** from the new value.
-  // ***
-  if (value1 != value2)
-  {
-    // ***
-    // *** The value is different so update EEPROM.
-    // ***
-    EEPROM.put(address, value1);
-  }
-}
-
-uint32_t calculateCrc()
-{
-  const unsigned long crc_table[16] =
-  {
-    0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac,
-    0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c,
-    0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c,
-    0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c
-  };
-
-  unsigned long crc = ~0L;
-
-  // ***
-  // *** Don't include the CRC value stored at REGISTER_TOTAL_SIZE + 1.
-  // ***
-  for (int i = 0 ; i < REGISTER_TOTAL_SIZE ; i++)
-  {
-    crc = crc_table[(crc ^ EEPROM[i]) & 0x0f] ^ (crc >> 4);
-    crc = crc_table[(crc ^ (EEPROM[i] >> 4)) & 0x0f] ^ (crc >> 4);
-    crc = ~crc;
-  }
-
-  return crc;
 }
 #endif

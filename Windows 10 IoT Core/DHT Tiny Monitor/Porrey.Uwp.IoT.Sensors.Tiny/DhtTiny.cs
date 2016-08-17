@@ -8,8 +8,8 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 		private const byte REGISTER_READALL = 0;
 		private const byte REGISTER_TEMPERATURE = 1;
 		private const byte REGISTER_HUMIDITY = 5;
-		private const byte REGISTER_INTERVAL = 9;
-		private const byte REGISTER_READING_ID = 13;
+		private const byte REGISTER_READING_ID = 9;
+		private const byte REGISTER_INTERVAL = 13;
 		private const byte REGISTER_UPPER_THRESHOLD = 17;
 		private const byte REGISTER_LOWER_THRESHOLD = 21;
 		private const byte REGISTER_START_DELAY = 25;

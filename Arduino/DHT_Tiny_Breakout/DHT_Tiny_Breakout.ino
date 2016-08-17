@@ -3,7 +3,7 @@
 // ***
 #define VERSION_MAJOR   1
 #define VERSION_MINOR   0
-#define VERSION_BUILD   56
+#define VERSION_BUILD   57
 
 #include <EEPROM.h>
 #include "dht.h"
@@ -50,8 +50,8 @@ volatile uint8_t _requestCount = 0;
 
 void setup()
 {
-  InitDebug();
-  DisplayRegisters();
+  initDebug();
+  displayRegisters();
 
   // ***
   // *** Restore the configuration from EEPROM. If the configuration
@@ -108,6 +108,10 @@ void setup()
     _registers[REGISTER_VER_MAJOR] = VERSION_MAJOR;
     _registers[REGISTER_VER_MINOR] = VERSION_MINOR;
     _registers[REGISTER_VER_BUILD] = VERSION_BUILD;
+  }
+  else
+  {
+    displaySavedConfiguration();
   }
 
   // ***
@@ -607,11 +611,6 @@ void checkForWriteConfiguration()
 
   if (writeConfig)
   {
-    writeUint32(REGISTER_INTERVAL, 1000);
-    writeFloat(REGISTER_UPPER_THRESHOLD, 30.0);
-    writeFloat(REGISTER_LOWER_THRESHOLD, 20.0);
-    writeUint32(REGISTER_START_DELAY, 3000);
-
     // ***
     // *** Save the configuration to EEPROM.
     // ***

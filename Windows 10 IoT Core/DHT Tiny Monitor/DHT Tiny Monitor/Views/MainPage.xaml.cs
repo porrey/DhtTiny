@@ -1,6 +1,7 @@
 ﻿using System;
 using Porrey.Tiny.Dht.Common;
 using Porrey.Uwp.IoT.Sensors.Tiny;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 
@@ -40,7 +41,7 @@ namespace Porrey.Tiny.Dht
 			}
 			catch (Exception ex)
 			{
-
+				(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
 			}
 
 			base.OnNavigatedTo(e);
@@ -93,19 +94,26 @@ namespace Porrey.Tiny.Dht
 			}
 			catch (Exception ex)
 			{
-
+				(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
 			}
 		}
 
 		protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
 		{
-			if (_dhtTiny != null)
+			try
 			{
-				_dhtTiny.Dispose();
-				_dhtTiny = null;
-			}
+				if (_dhtTiny != null)
+				{
+					_dhtTiny.Dispose();
+					_dhtTiny = null;
+				}
 
-			_timer.Stop();
+				_timer.Stop();
+			}
+			catch (Exception ex)
+			{
+				(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
+			}
 
 			base.OnNavigatingFrom(e);
 		}
@@ -320,15 +328,22 @@ namespace Porrey.Tiny.Dht
 
 		private void InitializeCommands()
 		{
-			this.EnabledCommand = new RelayCommand(OnEnabledCommand, OnCanEnabledCommand);
-			this.EnableThresholdsCommand = new RelayCommand(OnEnableThresholdsCommand, OnCanEnableThresholdsCommand);
-			this.TriggerReadingCommand = new RelayCommand(OnTriggerReadingCommand, OnCanTriggerReadingCommand);
-			this.Reserved1Command = new RelayCommand(OnReserved1Command, OnCanReserved1Command);
-			this.Reserved2Command = new RelayCommand(OnReserved2Command, OnCanReserved2Command);
-			this.Reserved3Command = new RelayCommand(OnReserved3Command, OnCanReserved3Command);
-			this.WriteConfigurationCommand = new RelayCommand(OnWriteConfigurationCommand, OnCanWriteConfigurationCommand);
-			this.ResetConfigurationCommand = new RelayCommand(OnResetConfigurationCommand, OnCanResetConfigurationCommand);
-			this.SettingsCommand = new RelayCommand(OnSettingsCommand, OnCanSettingsCommand);
+			try
+			{
+				this.EnabledCommand = new RelayCommand(OnEnabledCommand, OnCanEnabledCommand);
+				this.EnableThresholdsCommand = new RelayCommand(OnEnableThresholdsCommand, OnCanEnableThresholdsCommand);
+				this.TriggerReadingCommand = new RelayCommand(OnTriggerReadingCommand, OnCanTriggerReadingCommand);
+				this.Reserved1Command = new RelayCommand(OnReserved1Command, OnCanReserved1Command);
+				this.Reserved2Command = new RelayCommand(OnReserved2Command, OnCanReserved2Command);
+				this.Reserved3Command = new RelayCommand(OnReserved3Command, OnCanReserved3Command);
+				this.WriteConfigurationCommand = new RelayCommand(OnWriteConfigurationCommand, OnCanWriteConfigurationCommand);
+				this.ResetConfigurationCommand = new RelayCommand(OnResetConfigurationCommand, OnCanResetConfigurationCommand);
+				this.SettingsCommand = new RelayCommand(OnSettingsCommand, OnCanSettingsCommand);
+			}
+			catch (Exception ex)
+			{
+				(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
+			}
 		}
 
 		private bool OnCanSettingsCommand()
@@ -354,6 +369,10 @@ namespace Porrey.Tiny.Dht
 					_timer.Stop();
 					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.SensorEnabled, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.SensorEnabled));
 				}
+				catch (Exception ex)
+				{
+					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
+				}
 				finally
 				{
 					_timer.Start();
@@ -374,6 +393,10 @@ namespace Porrey.Tiny.Dht
 				{
 					_timer.Stop();
 					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.ThresholdEnabled, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.ThresholdEnabled));
+				}
+				catch (Exception ex)
+				{
+					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
 				}
 				finally
 				{
@@ -396,6 +419,10 @@ namespace Porrey.Tiny.Dht
 					_timer.Stop();
 					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.TriggerReading, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.TriggerReading));
 				}
+				catch (Exception ex)
+				{
+					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
+				}
 				finally
 				{
 					_timer.Start();
@@ -416,6 +443,10 @@ namespace Porrey.Tiny.Dht
 				{
 					_timer.Stop();
 					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.Reserved1, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.Reserved1));
+				}
+				catch (Exception ex)
+				{
+					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
 				}
 				finally
 				{
@@ -438,6 +469,10 @@ namespace Porrey.Tiny.Dht
 					_timer.Stop();
 					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.Reserved2, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.Reserved2));
 				}
+				catch (Exception ex)
+				{
+					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
+				}
 				finally
 				{
 					_timer.Start();
@@ -458,6 +493,10 @@ namespace Porrey.Tiny.Dht
 				{
 					_timer.Stop();
 					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.Reserved3, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.Reserved3));
+				}
+				catch (Exception ex)
+				{
+					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
 				}
 				finally
 				{
@@ -480,6 +519,10 @@ namespace Porrey.Tiny.Dht
 					_timer.Stop();
 					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.WriteConfig, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.WriteConfig));
 				}
+				catch (Exception ex)
+				{
+					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
+				}
 				finally
 				{
 					_timer.Start();
@@ -500,6 +543,10 @@ namespace Porrey.Tiny.Dht
 				{
 					_timer.Stop();
 					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.ResetConfig, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.ResetConfig));
+				}
+				catch (Exception ex)
+				{
+					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
 				}
 				finally
 				{

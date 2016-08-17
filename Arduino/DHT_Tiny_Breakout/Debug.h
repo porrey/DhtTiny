@@ -1,13 +1,9 @@
 #if defined( __AVR_ATtiny85__ )
-void InitDebug()
-{
-}
-
-void DisplayRegisters()
-{
-}
+void initDebug() {}
+void displayRegisters() {}
+void displaySavedConfiguration() {}
 #else
-void InitDebug()
+void initDebug()
 {
   Serial.begin(115200);
   delay(500);
@@ -17,15 +13,15 @@ void InitDebug()
   Serial.println("");
 }
 
-void DisplayRegisters()
+void displayRegisters()
 {
 
   Serial.println("C# Code:");
   Serial.print("private const byte REGISTER_READALL = "); Serial.print(REGISTER_READALL); Serial.println(";");
   Serial.print("private const byte REGISTER_TEMPERATURE = "); Serial.print(REGISTER_TEMPERATURE); Serial.println(";");
   Serial.print("private const byte REGISTER_HUMIDITY = "); Serial.print(REGISTER_HUMIDITY); Serial.println(";");
-  Serial.print("private const byte REGISTER_INTERVAL = "); Serial.print(REGISTER_INTERVAL); Serial.println(";");
   Serial.print("private const byte REGISTER_READING_ID = "); Serial.print(REGISTER_READING_ID); Serial.println(";");
+  Serial.print("private const byte REGISTER_INTERVAL = "); Serial.print(REGISTER_INTERVAL); Serial.println(";");
   Serial.print("private const byte REGISTER_UPPER_THRESHOLD = "); Serial.print(REGISTER_UPPER_THRESHOLD); Serial.println(";");
   Serial.print("private const byte REGISTER_LOWER_THRESHOLD = "); Serial.print(REGISTER_LOWER_THRESHOLD); Serial.println(";");
   Serial.print("private const byte REGISTER_START_DELAY = "); Serial.print(REGISTER_START_DELAY); Serial.println(";");
@@ -35,5 +31,16 @@ void DisplayRegisters()
   Serial.print("private const byte REGISTER_VER_MINOR = "); Serial.print(REGISTER_VER_MINOR); Serial.println(";");
   Serial.print("private const byte REGISTER_VER_BUILD = "); Serial.print(REGISTER_VER_BUILD); Serial.println(";");
   Serial.print("private const byte REGISTER_TOTAL_SIZE = "); Serial.print(REGISTER_TOTAL_SIZE); Serial.println(";");
+}
+
+void displaySavedConfiguration()
+{
+  Serial.println("");
+  Serial.println("Saved Values:");
+  Serial.print("Interval = "); Serial.println(readUint32(REGISTER_INTERVAL));
+  Serial.print("Upper Threshold = "); Serial.println(readFloat(REGISTER_UPPER_THRESHOLD));
+  Serial.print("Lower Threshold = "); Serial.println(readFloat(REGISTER_LOWER_THRESHOLD));
+  Serial.print("Start Delay = "); Serial.println(readUint32(REGISTER_START_DELAY));
+  Serial.print("Configuration = "); Serial.println(_registers[REGISTER_CONFIG]);
 }
 #endif

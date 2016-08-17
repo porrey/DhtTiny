@@ -8,9 +8,9 @@
 #define REGISTER_READALL            0                                          // *** uint8
 #define REGISTER_TEMPERATURE        REGISTER_READALL          + SIZE_UINT8     // *** float
 #define REGISTER_HUMIDITY           REGISTER_TEMPERATURE      + SIZE_FLOAT     // *** float
-#define REGISTER_INTERVAL           REGISTER_HUMIDITY         + SIZE_FLOAT     // *** uint32
-#define REGISTER_READING_ID         REGISTER_INTERVAL         + SIZE_UINT32    // *** uint32
-#define REGISTER_UPPER_THRESHOLD    REGISTER_READING_ID       + SIZE_UINT32    // *** float
+#define REGISTER_READING_ID         REGISTER_HUMIDITY         + SIZE_UINT32    // *** uint32
+#define REGISTER_INTERVAL           REGISTER_READING_ID       + SIZE_FLOAT     // *** uint32
+#define REGISTER_UPPER_THRESHOLD    REGISTER_INTERVAL         + SIZE_UINT32    // *** float
 #define REGISTER_LOWER_THRESHOLD    REGISTER_UPPER_THRESHOLD  + SIZE_FLOAT     // *** float
 #define REGISTER_START_DELAY        REGISTER_LOWER_THRESHOLD  + SIZE_FLOAT     // *** uint32
 #define REGISTER_CONFIG             REGISTER_START_DELAY      + SIZE_UINT32    // *** uint8
@@ -81,8 +81,8 @@ const uint8_t _registerProtection[REGISTER_TOTAL_SIZE] =
   2,          //REGISTER_READALL (read-only)
   2, 2, 2, 2, //REGISTER_TEMPERATURE (read-only)
   2, 2, 2, 2, //REGISTER_HUMIDITY (read-only)
-  0, 1, 1, 1, //REGISTER_INTERVAL
   2, 2, 2, 2, //REGISTER_READING_ID (read-only)
+  0, 1, 1, 1, //REGISTER_INTERVAL
   0, 1, 1, 1, //REGISTER_UPPER_THRESHOLD
   0, 1, 1, 1, //REGISTER_LOWER_THRESHOLD
   0, 1, 1, 1, //REGISTER_START_DELAY
