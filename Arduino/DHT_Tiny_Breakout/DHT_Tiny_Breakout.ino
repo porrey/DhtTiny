@@ -1,30 +1,24 @@
+// ***
+// *** Version
+// ***
+#define VERSION_MAJOR   1
+#define VERSION_MINOR   0
+#define VERSION_BUILD   56
+
 #include <EEPROM.h>
-#include <TinyWireS.h>
 #include "dht.h"
 #include "ByteConverter.h"
 #include "Registers.h"
 #include "Register_Defs.h"
 #include "Configuration.h"
+#include "MyWire.h"
+#include "Pins.h"
+#include "Debug.h"
 
 // ***
 // *** Default slave address.
 // ***
 #define I2C_SLAVE_ADDRESS 0x26
-
-// ***
-// *** The pin on which the DHT Data pin is connected.
-// ***
-#define DHT_READING_PIN 3
-
-// ***
-// *** The pin on which the DHT GND pin is connected.
-// ***
-#define DHT_POWER_PIN 1
-
-// ***
-// *** Interrupt pin.
-// ***
-#define INTERRUPT_PIN 4
 
 // ***
 // *** Default interval used to read the DHT
@@ -50,15 +44,18 @@ uint32_t _lastReading = millis();
 volatile bool _thresholdsEnabled = false;
 
 // ***
-// *** Thenumber of bytes to return in the next request.
+// *** The number of bytes to return in the next request.
 // ***
 volatile uint8_t _requestCount = 0;
 
 void setup()
 {
+  InitDebug();
+  DisplayRegisters();
+
   // ***
   // *** Restore the configuration from EEPROM. If the configuration
-  // *** could not be restord, then se the default values.
+  // *** could not be restord, set the default values.
   // ***
   if (!restoreConfiguration())
   {
@@ -81,22 +78,36 @@ void setup()
     writeUint32(REGISTER_START_DELAY, 1000);
 
     // ***
-    // *** Initialize the configuration register.
+    // *** Initialize the configuration register. This could be
+    // *** done by writing a single byte, but it is easier to
+    // *** tweak this way.
     // ***
     setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_SENSOR_ENABLED, 1);
     setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_THRESHOLD_ENABLED, 0);
     setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_TRIGGER_READING, 0);
+    setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_RESERVED_1, 0);
+    setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_RESERVED_2, 0);
+    setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_RESERVED_3, 0);
+    setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_WRITE_CONFIG, 0);
+    setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_RESET_CONFIG, 0);
 
     // ***
-    // *** Initialize the thresholds to 0.
+    // *** Initialize the thresholds.
     // ***
-    writeFloat(REGISTER_UPPER_THRESHOLD, 0);
-    writeFloat(REGISTER_LOWER_THRESHOLD, 0);
+    writeFloat(REGISTER_LOWER_THRESHOLD, 21.0);
+    writeFloat(REGISTER_UPPER_THRESHOLD, 26.0);
 
     // ***
     // *** Clear status register.
     // ***
     writeFloat(REGISTER_STATUS, 0);
+
+    // ***
+    // *** Set the version.
+    // ***
+    _registers[REGISTER_VER_MAJOR] = VERSION_MAJOR;
+    _registers[REGISTER_VER_MINOR] = VERSION_MINOR;
+    _registers[REGISTER_VER_BUILD] = VERSION_BUILD;
   }
 
   // ***
@@ -123,9 +134,9 @@ void setup()
   // ***
   // *** Setup the I2C bus.
   // ***
-  TinyWireS.begin(I2C_SLAVE_ADDRESS);
-  TinyWireS.onReceive(receiveEvent);
-  TinyWireS.onRequest(requestEvent);
+  Wire.begin(I2C_SLAVE_ADDRESS);
+  Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
 }
 
 void loop()
@@ -133,7 +144,7 @@ void loop()
   // ***
   // *** Check the I2C bus.
   // ***
-  TinyWireS_stop_check();
+  WireLoopCheck;
 
   // ***
   // *** Check the sensor interval to determine if
@@ -163,13 +174,25 @@ void loop()
 
 void receiveEvent(uint8_t byteCount)
 {
+  // ***
+  // *** Read all of the bytes from the wire.
+  // ***
+  byte buffer[byteCount];
+  for (int i = 0; i < byteCount; i++)
+  {
+    buffer[i] = WireRead;
+  }
+
+  // ***
+  // *** Process the data.
+  // ***
   if (byteCount > 0)
   {
     // ***
     // *** The first byte sent is always the
     // *** register position.
     // ***
-    uint8_t registerPosition = TinyWireS.receive();
+    uint8_t registerPosition = buffer[0];
 
     // ***
     // *** Ensure the register position is within bounds.
@@ -192,25 +215,35 @@ void receiveEvent(uint8_t byteCount)
       if (isWriteOperation)
       {
         // ***
-        // *** Read the remaining bytes and write them to the registers.
+        // *** Get the expected write count for this register position.
         // ***
-        for (int i = 0; i < byteCount - 1; i++)
+        uint8_t expectedWriteCount = _registerSize[_registerPosition];
+
+        if ((byteCount - 1) == expectedWriteCount && isWriteableRegisterPosition(_registerPosition))
         {
           // ***
-          // *** Read the next byte from the wire.
+          // *** Read the remaining bytes and write them to the registers.
           // ***
-          uint8_t value = TinyWireS.receive();
-
-          // ***
-          // *** Don't allow a read-only register position
-          // *** to be written to.
-          // ***
-          if (isWriteableRegisterPosition(_registerPosition))
+          for (uint8_t i = 1; i < byteCount; i++)
           {
-            _registers[_registerPosition] = value;
+            // ***
+            // *** Read the next byte from the wire.
+            // ***
+            _registers[_registerPosition] = buffer[i];
+            advanceRegisterPosition();
           }
 
-          advanceRegisterPosition();
+          // ***
+          // *** Set the write error status bit to success.
+          // ***
+          setRegisterBit(REGISTER_STATUS, STATUS_WRITE_ERROR, 0);
+        }
+        else
+        {
+          // ***
+          // *** Set the write error status bit to failure.
+          // ***
+          setRegisterBit(REGISTER_STATUS, STATUS_WRITE_ERROR, 1);
         }
 
         // ***
@@ -219,10 +252,9 @@ void receiveEvent(uint8_t byteCount)
         _requestCount = 0;
 
         // ***
-        // *** Set the read/write error status bits.
+        // *** Set the read error status bits.
         // ***
         setRegisterBit(REGISTER_STATUS, STATUS_READ_ERROR, 0);
-        setRegisterBit(REGISTER_STATUS, STATUS_WRITE_ERROR, 0);
       }
       else
       {
@@ -237,6 +269,14 @@ void receiveEvent(uint8_t byteCount)
         setRegisterBit(REGISTER_STATUS, STATUS_READ_ERROR, 0);
         setRegisterBit(REGISTER_STATUS, STATUS_WRITE_ERROR, 0);
       }
+    }
+    else
+    {
+      // ***
+      // *** Set the read/write error status bits.
+      // ***
+      setRegisterBit(REGISTER_STATUS, STATUS_READ_ERROR, byteCount == 1);
+      setRegisterBit(REGISTER_STATUS, STATUS_WRITE_ERROR, byteCount > 1);
     }
   }
   else
@@ -254,9 +294,9 @@ void clearBuffer()
   // ***
   // *** Clear the receive buffer.
   // ***
-  while (TinyWireS.available())
+  while (Wire.available())
   {
-    TinyWireS.receive();
+    WireRead;
   }
 }
 
@@ -279,9 +319,9 @@ void requestEvent()
   // ***
   // *** Send the next byte in the registers.
   // ***
-  for (int i = 0; i < _requestCount; i++)
+  for (uint8_t i = 0; i < _requestCount; i++)
   {
-    TinyWireS.send(_registers[_registerPosition]);
+    WireSend(_registers[_registerPosition]);
     advanceRegisterPosition();
   }
 
@@ -318,27 +358,24 @@ void checkForManualSensorRead()
   // ***
   uint32_t interval = readUint32(REGISTER_INTERVAL);
 
-  if (interval == 0)
+  // ***
+  // *** We are in manual trigger mode. Check
+  // *** if the trigger reading bit is set.
+  // ***
+  bool manualReadTriggered = getRegisterBit(REGISTER_CONFIG, CONFIG_BIT_TRIGGER_READING);
+
+  if (interval == 0 && manualReadTriggered)
   {
     // ***
-    // *** We are in manual trigger mode. Check
-    // *** if the trigger reading bit is set.
+    // *** Read the sensor.
     // ***
-    bool manualReadTriggered = getRegisterBit(REGISTER_CONFIG, CONFIG_BIT_TRIGGER_READING);
-
-    if (manualReadTriggered)
-    {
-      // ***
-      // *** Reset the trigger reading bit.
-      // ***
-      setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_TRIGGER_READING, 0);
-
-      // ***
-      // *** Read the sensor.
-      // ***
-      readSensor();
-    }
+    readSensor();
   }
+
+  // ***
+  // *** Reset the trigger reading bit.
+  // ***
+  setRegisterBit(REGISTER_CONFIG, CONFIG_BIT_TRIGGER_READING, 0);
 }
 
 void readSensor()
@@ -426,7 +463,7 @@ void checkForSensorEnabledChange()
       // *** Before attempting a reading, wait for
       // *** the sensor to stabilize.
       // ***
-      tws_delay(readUint32(REGISTER_START_DELAY));
+      WireDelay(readUint32(REGISTER_START_DELAY));
     }
   }
   else
@@ -513,7 +550,7 @@ void checkThresholds()
       setRegisterBit(REGISTER_STATUS, STATUS_LOWER_THRESHOLD_EXCEEDED, 0);
     }
   }
-  else if (_thresholdsEnabled)
+  else
   {
     // ***
     // *** Reset the flag.
@@ -570,6 +607,11 @@ void checkForWriteConfiguration()
 
   if (writeConfig)
   {
+    writeUint32(REGISTER_INTERVAL, 1000);
+    writeFloat(REGISTER_UPPER_THRESHOLD, 30.0);
+    writeFloat(REGISTER_LOWER_THRESHOLD, 20.0);
+    writeUint32(REGISTER_START_DELAY, 3000);
+
     // ***
     // *** Save the configuration to EEPROM.
     // ***

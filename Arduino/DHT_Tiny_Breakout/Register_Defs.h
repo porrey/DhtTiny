@@ -15,11 +15,14 @@
 #define REGISTER_START_DELAY        REGISTER_LOWER_THRESHOLD  + SIZE_FLOAT     // *** uint32
 #define REGISTER_CONFIG             REGISTER_START_DELAY      + SIZE_UINT32    // *** uint8
 #define REGISTER_STATUS             REGISTER_CONFIG           + SIZE_UINT8     // *** uint8
+#define REGISTER_VER_MAJOR          REGISTER_STATUS           + SIZE_UINT8     // *** uint8
+#define REGISTER_VER_MINOR          REGISTER_VER_MAJOR        + SIZE_UINT8     // *** uint8
+#define REGISTER_VER_BUILD          REGISTER_VER_MINOR        + SIZE_UINT8     // *** uint8
 
 // ***
 // *** Total size of the registers in bytes.
 // ***
-#define REGISTER_TOTAL_SIZE         REGISTER_STATUS           + SIZE_UINT8
+#define REGISTER_TOTAL_SIZE         REGISTER_VER_BUILD        + SIZE_UINT8
 
 // ***
 // *** This array indicates he number of bytes to return when a read
@@ -35,6 +38,9 @@ const uint8_t _registerSize[REGISTER_TOTAL_SIZE] = { REGISTER_TOTAL_SIZE,
                                                      SIZE_FLOAT, 0, 0, 0,
                                                      SIZE_FLOAT, 0, 0, 0,
                                                      SIZE_UINT32, 0, 0, 0,
+                                                     SIZE_UINT8,
+                                                     SIZE_UINT8,
+                                                     SIZE_UINT8,
                                                      SIZE_UINT8,
                                                      SIZE_UINT8 };
                                                      
@@ -82,6 +88,9 @@ const uint8_t _registerProtection[REGISTER_TOTAL_SIZE] =
   0, 1, 1, 1, //REGISTER_START_DELAY
   0,          //REGISTER_CONFIG
   2,          //REGISTER_STATUS (read-only)
+  2,          //REGISTER_VER_MAJOR (read-only)
+  2,          //REGISTER_VER_MINOR (read-only)
+  2,          //REGISTER_VER_BUILD (read-only)
 };
 
 #endif

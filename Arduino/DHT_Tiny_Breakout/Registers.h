@@ -17,7 +17,7 @@ volatile uint8_t _registerPosition = 0;
 void advanceRegisterPosition()
 {
   _registerPosition++;
-  if (_registerPosition >= REGISTER_TOTAL_SIZE) _registerPosition == 0;
+  if (_registerPosition == REGISTER_TOTAL_SIZE) _registerPosition = 0;  
 }
 
 void setRegisterBit(uint8_t registerId, uint8_t statusBit, uint8_t value)
@@ -73,28 +73,28 @@ void writeUint32(uint8_t registerId, uint32_t value)
   _registers[registerId + 3] = data[3];
 }
 
-uint8_t calculateCrc8(uint8_t *data, byte byteCount) 
+uint8_t calculateCrc8(uint8_t *data, byte byteCount)
 {
   uint8_t crc = 0x00;
-  
-  while (byteCount--) 
+
+  while (byteCount--)
   {
     uint8_t extract = *data++;
-    
-    for (uint8_t tempI = 8; tempI; tempI--) 
+
+    for (uint8_t tempI = 8; tempI; tempI--)
     {
       uint8_t sum = (crc ^ extract) & 0x01;
       crc >>= 1;
-      
-      if (sum) 
+
+      if (sum)
       {
         crc ^= 0x8C;
       }
-      
+
       extract >>= 1;
     }
   }
-  
+
   return crc;
 }
 #endif

@@ -15,8 +15,10 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 		private const byte REGISTER_START_DELAY = 25;
 		private const byte REGISTER_CONFIG = 29;
 		private const byte REGISTER_STATUS = 30;
-
-		private const byte REGISTER_SIZE = 31;
+		private const byte REGISTER_VER_MAJOR = 31;
+		private const byte REGISTER_VER_MINOR = 32;
+		private const byte REGISTER_VER_BUILD = 33;
+		private const byte REGISTER_TOTAL_SIZE = 34;
 
 		// ***
 		// *** Configuration bits.
@@ -67,7 +69,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Read all of the registers.
 				// ***
-				byte[] readBuffer = new byte[REGISTER_SIZE];
+				byte[] readBuffer = new byte[REGISTER_TOTAL_SIZE];
 				this.Device.Read(readBuffer);
 
 				this.Temperature = BitConverter.ToSingle(readBuffer, REGISTER_TEMPERATURE);
@@ -167,13 +169,14 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_TEMPERATURE };
+				this.Device.Write(writeBuffer);
 
 				// ***
 				// *** Write the register value and read from the device
 				// *** at the same time.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.WriteRead(writeBuffer, readBuffer);
+				this.Device.Read(readBuffer);
 				returnValue = BitConverter.ToSingle(readBuffer, 0);
 			}
 			else
@@ -194,13 +197,14 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_HUMIDITY };
+				this.Device.Write(writeBuffer);
 
 				// ***
 				// *** Write the register value and read from the device
 				// *** at the same time.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.WriteRead(writeBuffer, readBuffer);
+				this.Device.Read(readBuffer);
 				returnValue = BitConverter.ToSingle(readBuffer, 0);
 			}
 			else
@@ -221,13 +225,14 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_INTERVAL };
+				this.Device.Write(writeBuffer);
 
 				// ***
 				// *** Write the register value and read from the device
 				// *** at the same time.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.WriteRead(writeBuffer, readBuffer);
+				this.Device.Read(readBuffer);
 				returnValue = BitConverter.ToUInt32(readBuffer, 0);
 			}
 			else
@@ -274,13 +279,14 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_READING_ID };
+				this.Device.Write(writeBuffer);
 
 				// ***
 				// *** Write the register value and read from the device
 				// *** at the same time.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.WriteRead(writeBuffer, readBuffer);
+				this.Device.Read(readBuffer);
 				returnValue = BitConverter.ToUInt32(readBuffer, 0);
 			}
 			else
@@ -301,13 +307,14 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_UPPER_THRESHOLD };
+				this.Device.Write(writeBuffer);
 
 				// ***
 				// *** Write the register value and read from the device
 				// *** at the same time.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.WriteRead(writeBuffer, readBuffer);
+				this.Device.Read(readBuffer);
 				returnValue = BitConverter.ToSingle(readBuffer, 0);
 			}
 			else
@@ -354,13 +361,14 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_LOWER_THRESHOLD };
+				this.Device.Write(writeBuffer);
 
 				// ***
 				// *** Write the register value and read from the device
 				// *** at the same time.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.WriteRead(writeBuffer, readBuffer);
+				this.Device.Read(readBuffer);
 				returnValue = BitConverter.ToSingle(readBuffer, 0);
 			}
 			else
@@ -407,13 +415,14 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_STATUS };
+				this.Device.Write(writeBuffer);
 
 				// ***
 				// *** Write the register value and read from the device
 				// *** at the same time.
 				// ***
 				byte[] readBuffer = new byte[1] { 0 };
-				this.Device.WriteRead(writeBuffer, readBuffer);
+				this.Device.Read(readBuffer);
 				returnValue = readBuffer[0];
 			}
 			else
@@ -434,13 +443,14 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_CONFIG };
+				this.Device.Write(writeBuffer);
 
 				// ***
 				// *** Write the register value and read from the device
 				// *** at the same time.
 				// ***
 				byte[] readBuffer = new byte[1] { 0 };
-				this.Device.WriteRead(writeBuffer, readBuffer);
+				this.Device.Read(readBuffer);
 				returnValue = readBuffer[0];
 			}
 			else
@@ -496,7 +506,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Set the bit.
 				// ***
-				Bit.Set(currentValue, position, bit);
+				currentValue = Bit.Set(currentValue, position, bit);
 
 				// ***
 				// *** Write the new value.
