@@ -256,8 +256,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Write the register value and the value.
 				// ***
-				await this.WriteAsync(writeBuffer);
-				returnValue = true;
+				returnValue = await this.WriteAsync(writeBuffer);
 			}
 			else
 			{
@@ -309,8 +308,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Write the register value and the value.
 				// ***
-				await this.WriteAsync(writeBuffer);
-				returnValue = true;
+				returnValue = await this.WriteAsync(writeBuffer);
 			}
 			else
 			{
@@ -442,8 +440,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Read from the device.
 				// ***
-				await this.WriteAsync(writeBuffer);
-				returnValue = true;
+				returnValue = await this.WriteAsync(writeBuffer);
 			}
 			else
 			{
@@ -526,9 +523,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Write the register value and the value.
 				// ***
-				await this.WriteAsync(writeBuffer);
-
-				returnValue = true;
+				returnValue = await this.WriteAsync(writeBuffer);
 			}
 			else
 			{
@@ -612,6 +607,30 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				byte[] readBuffer = new byte[1] { 0 };
 				await this.ReadAsync(readBuffer);
 				returnValue = readBuffer[0];
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public async Task<bool> SetDeviceAddressAsync(byte value)
+		{
+			bool returnValue = false;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[2] { REGISTER_DEVICE_ADDRESS, value };
+
+				// ***
+				// *** Write the register value and the value.
+				// ***
+				returnValue = await this.WriteAsync(writeBuffer);
 			}
 			else
 			{

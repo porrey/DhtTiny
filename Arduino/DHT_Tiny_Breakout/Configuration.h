@@ -60,7 +60,7 @@ byte getDeviceAddress()
 void setDeviceAddress(byte address)
 {
   EEPROM.update(ADDRESS_SIGNATURE, SIGNATURE);
-  EEPROM.update(DEVICE_ADDRESS, I2C_SLAVE_ADDRESS);
+  EEPROM.update(DEVICE_ADDRESS, address);
 }
 
 void resetConfiguration()

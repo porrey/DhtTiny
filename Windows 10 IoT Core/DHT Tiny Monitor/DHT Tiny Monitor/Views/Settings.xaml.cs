@@ -12,6 +12,7 @@ namespace DhtTinyMonitor.Views
 		private float _lowerThreshold = 0f;
 		private float _upperThreshold = 0f;
 		private UInt32 _startDelay = 0;
+		private byte _address = 0;
 
 		public Settings(DhtTiny dhtTiny)
 		{
@@ -32,6 +33,7 @@ namespace DhtTinyMonitor.Views
 				_lowerThreshold = await _dhtTiny.GetLowerThresholdAsync();
 				_upperThreshold = await _dhtTiny.GetUpperThresholdAsync();
 				_startDelay = await _dhtTiny.GetStartDelayAsync();
+				_address = await _dhtTiny.GetDeviceAddressAsync();
 
 				// ***
 				// *** Update the dialog.
@@ -40,6 +42,7 @@ namespace DhtTinyMonitor.Views
 				this.lowerThreshold.Value = _lowerThreshold;
 				this.upperThreshold.Value = _upperThreshold;
 				this.startDelay.Value = _startDelay;
+				this.address.Value = _address;
 			}
 			catch (Exception ex)
 			{
@@ -58,6 +61,7 @@ namespace DhtTinyMonitor.Views
 				float lowerThreshold = Convert.ToUInt32(this.lowerThreshold.Value);
 				float upperThreshold = Convert.ToUInt32(this.upperThreshold.Value);
 				UInt32 startDelay = Convert.ToUInt32(this.startDelay.Value);
+				byte address = Convert.ToByte(this.address.Value);
 
 				// ***
 				// *** Update only values that have changed.
@@ -66,6 +70,7 @@ namespace DhtTinyMonitor.Views
 				if (_lowerThreshold != lowerThreshold) await _dhtTiny.SetLowerThresholdAsync(lowerThreshold);
 				if (_upperThreshold != upperThreshold) await _dhtTiny.SetUpperThresholdAsync(upperThreshold);
 				if (_startDelay != startDelay) await _dhtTiny.SetStartDelayAsync(startDelay);
+				if (_address != address) await _dhtTiny.SetDeviceAddressAsync(address);
 			}
 			catch (Exception ex)
 			{

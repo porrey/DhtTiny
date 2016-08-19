@@ -7,6 +7,7 @@
 void initDebug() {}
 void displayRegisters() {}
 void displaySavedConfiguration() {}
+void displayDeviceAddress() { }
 #else
 void initDebug()
 {
@@ -47,6 +48,12 @@ void displayConfiguration()
   Serial.print("Lower Threshold = "); Serial.println(readFloat(REGISTER_LOWER_THRESHOLD));
   Serial.print("Start Delay = "); Serial.println(readUint32(REGISTER_START_DELAY));
   Serial.print("Configuration = "); Serial.println(_registers[REGISTER_CONFIG]);
+}
+
+void displayDeviceAddress()
+{
+  Serial.println("");
+  Serial.print("Device Address = "); Serial.println(_registers[REGISTER_DEVICE_ADDRESS], HEX);
 }
 #endif
 #endif

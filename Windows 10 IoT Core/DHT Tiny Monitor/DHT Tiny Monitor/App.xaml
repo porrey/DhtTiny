@@ -2,6 +2,14 @@
 			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:local="using:Porrey.Tiny.Dht"
+			 xmlns:common="using:Porrey.Tiny.Dht.Common"
 			 RequestedTheme="Light">
-
+	<Application.Resources>
+		<ResourceDictionary>
+			<!-- ***            -->
+			<!-- *** Converters -->
+			<!-- ***            -->
+			<common:ByteToHexConverter x:Key="ByteToHexConverter"></common:ByteToHexConverter>
+		</ResourceDictionary>
+	</Application.Resources>
 </Application>

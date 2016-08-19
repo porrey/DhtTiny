@@ -96,6 +96,7 @@
     </Compile>
     <Compile Include="Common\BindableBase.cs" />
     <Compile Include="Common\BindablePage.cs" />
+    <Compile Include="Common\ByteToHexConverter.cs" />
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>

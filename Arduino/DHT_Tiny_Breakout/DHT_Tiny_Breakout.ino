@@ -138,6 +138,7 @@ void setup()
   // *** Put the current device address into the register.
   // ***
   _registers[REGISTER_DEVICE_ADDRESS] = deviceAddress;
+  displayDeviceAddress();
 
   Wire.begin(deviceAddress);
   Wire.onReceive(receiveEvent);
