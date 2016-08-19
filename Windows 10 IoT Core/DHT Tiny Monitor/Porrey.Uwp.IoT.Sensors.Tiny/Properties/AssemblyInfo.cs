@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Porrey.Uwp.IoT.Sensors.DhtTiny")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("DHT Tiny")]
+[assembly: AssemblyDescription("Provides direct support for the DHT Tiny i2c device.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Porrey.Uwp.IoT.Sensors.DhtTiny")]
+[assembly: AssemblyCompany("DHT Tiny")]
+[assembly: AssemblyProduct("DHT Tiny")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("written by Daniel M. Porrey")]
 [assembly: AssemblyCulture("")]
 
 // Version information for an assembly consists of the following four values:
