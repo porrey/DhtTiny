@@ -1,16 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using DhtTinyMonitor.Views;
 using Porrey.Tiny.Dht.Common;
+using Porrey.Uwp.IoT.Sensors;
 using Porrey.Uwp.IoT.Sensors.Tiny;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 
-namespace Porrey.Tiny.Dht
+namespace Porrey.Tiny.Dht.Views
 {
 	public sealed partial class MainPage : BindablePage
 	{
 		private DhtTiny _dhtTiny = null;
 		private DispatcherTimer _timer = new DispatcherTimer();
+		private ManualResetEvent _busy = new ManualResetEvent(false);
 
 		public MainPage()
 		{
@@ -29,15 +36,62 @@ namespace Porrey.Tiny.Dht
 			try
 			{
 				// ***
-				// *** Setup the DhtTiny instance.
+				// *** Find all devices on the bus. This code may take up to a minute
+				// *** and should not be used permanently. It is included here as a
+				// *** deonstration on how to locate the device on the i2c bus.
 				// ***
-				_dhtTiny = new DhtTiny(0x26);
-				await _dhtTiny.InitializeAsync();
+				IEnumerable<byte> address = await DhtTiny.FindAllDhtTinyAsync(this.FindAllDhtTinyCallback);
 
-				// ***
-				// *** Start the timer.
-				// ***
-				_timer.Start();
+				if (address.Count() > 0)
+				{
+					this.Status = string.Format("{0} device(s) found.", address.Count());
+
+					// ***
+					// *** Setup the DhtTiny instance.
+					// ***
+					_dhtTiny = new DhtTiny(address.First());
+					var result = await _dhtTiny.InitializeAsync();
+
+					if (result == InitializationResult.Successful)
+					{
+						this.Version = string.Format("Version: {0}", await _dhtTiny.GetFirmwareVersionAsync());
+						this.Id = string.Format("ID: 0x{0:X2}", await _dhtTiny.GetDeviceIdAsync());
+						this.Address = string.Format("Address: 0x{0:X2}", await _dhtTiny.GetDeviceAddressAsync());
+
+						// ***
+						// *** Start the timer.
+						// ***
+						_timer.Start();
+
+						this.Status = "Ready.";
+					}
+					else
+					{
+						string message = string.Empty;
+
+						switch (result)
+						{
+							case InitializationResult.None:
+								message = "Initialization has not been performed.";
+								break;
+							case InitializationResult.NoI2cController:
+								message = "Initialization failed due to lack of an I2C controller.";
+								break;
+							case InitializationResult.DeviceInUse:
+								message = "Initialization failed due to device already in use.";
+								break;
+							case InitializationResult.DeviceNotFound:
+								message = "Initialization failed because a device was not found on the I2C bus.";
+								break;
+						}
+
+						this.Status = string.Format("Initialization Error: {0}", message);
+					}
+				}
+				else
+				{
+					this.Status = "No DHT Tiny devices were found. Check connections and try again.";
+				}
 			}
 			catch (Exception ex)
 			{
@@ -47,54 +101,57 @@ namespace Porrey.Tiny.Dht
 			base.OnNavigatedTo(e);
 		}
 
-		private void Timer_Tick(object sender, object e)
+		private async void Timer_Tick(object sender, object e)
 		{
 			try
 			{
-				lock (_dhtTiny)
-				{
-					_dhtTiny.Refresh();
+				_busy.Reset();
 
-					this.Interval = _dhtTiny.Interval;
-					this.ReadingId = _dhtTiny.ReadingId;
-					this.Temperature = string.Format("{0:0.0}°C", _dhtTiny.Temperature);
-					this.Humidity = string.Format("{0:0.0}%", _dhtTiny.Humidity);
-					this.UpperThreshold = _dhtTiny.UpperThreshold;
-					this.LowerThreshold = _dhtTiny.LowerThreshold;
-					this.StartDelay = _dhtTiny.StartDelay;
+				this.Interval = await _dhtTiny.GetIntervalAsync();
+				this.ReadingId = await _dhtTiny.GetReadingIdAsync();
+				this.Temperature = string.Format("{0:0.0}°C", await _dhtTiny.GetTemperatureAsync());
+				this.Humidity = string.Format("{0:0.0}%", await _dhtTiny.GetHumidityAsync());
+				this.UpperThreshold = await _dhtTiny.GetUpperThresholdAsync();
+				this.LowerThreshold = await _dhtTiny.GetLowerThresholdAsync();
+				this.StartDelay = await _dhtTiny.GetStartDelayAsync();
 
-					this.StatusEnabled = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.IsEnabled) ? "1" : "0";
-					this.StatusUpperThresholdExceeded = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.UpperThresholdExceeded) ? "1" : "0";
-					this.StatusLowerThresholdExceeded = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.LowerThresholdExceeded) ? "1" : "0";
-					this.StatusReserved1 = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.Reserved1) ? "1" : "0";
-					this.StatusReserved2 = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.Reserved2) ? "1" : "0";
-					this.StatusConfigurationSaved = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.ConfigSaved) ? "1" : "0";
-					this.StatusReadError = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.ReadError) ? "1" : "0";
-					this.StatusWriteError = _dhtTiny.GetStatusBit(DhtTiny.StatusBit.WriteError) ? "1" : "0";
+				byte statusBits = await _dhtTiny.GetStatusAsync();
+				this.StatusEnabled = _dhtTiny.GetStatusBit(statusBits, DhtTiny.StatusBit.IsEnabled) ? "1" : "0";
+				this.StatusUpperThresholdExceeded = _dhtTiny.GetStatusBit(statusBits, DhtTiny.StatusBit.UpperThresholdExceeded) ? "1" : "0";
+				this.StatusLowerThresholdExceeded = _dhtTiny.GetStatusBit(statusBits, DhtTiny.StatusBit.LowerThresholdExceeded) ? "1" : "0";
+				this.StatusReserved1 = _dhtTiny.GetStatusBit(statusBits, DhtTiny.StatusBit.Reserved1) ? "1" : "0";
+				this.StatusReserved2 = _dhtTiny.GetStatusBit(statusBits, DhtTiny.StatusBit.Reserved2) ? "1" : "0";
+				this.StatusConfigurationSaved = _dhtTiny.GetStatusBit(statusBits, DhtTiny.StatusBit.ConfigSaved) ? "1" : "0";
+				this.StatusReadError = _dhtTiny.GetStatusBit(statusBits, DhtTiny.StatusBit.ReadError) ? "1" : "0";
+				this.StatusWriteError = _dhtTiny.GetStatusBit(statusBits, DhtTiny.StatusBit.WriteError) ? "1" : "0";
 
-					this.configEnabled.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.SensorEnabled) ? true : false;
-					this.configThresholdEnabled.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.ThresholdEnabled) ? true : false;
-					this.configTriggerReading.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.TriggerReading) ? true : false;
-					this.reserved1.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.Reserved1) ? true : false;
-					this.reserved2.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.Reserved2) ? true : false;
-					this.reserved3.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.Reserved3) ? true : false;
-					this.writeConfiguration.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.WriteConfig) ? true : false;
-					this.resetConfiguration.IsChecked = _dhtTiny.GetConfigurationBit(DhtTiny.ConfigBit.ResetConfig) ? true : false;
+				byte configurationBits = await _dhtTiny.GetConfigurationAsync();
+				this.configEnabled.IsChecked = _dhtTiny.GetConfigurationBit(configurationBits, DhtTiny.ConfigBit.SensorEnabled) ? true : false;
+				this.configThresholdEnabled.IsChecked = _dhtTiny.GetConfigurationBit(configurationBits, DhtTiny.ConfigBit.ThresholdEnabled) ? true : false;
+				this.configTriggerReading.IsChecked = _dhtTiny.GetConfigurationBit(configurationBits, DhtTiny.ConfigBit.TriggerReading) ? true : false;
+				this.reserved1.IsChecked = _dhtTiny.GetConfigurationBit(configurationBits, DhtTiny.ConfigBit.Reserved1) ? true : false;
+				this.reserved2.IsChecked = _dhtTiny.GetConfigurationBit(configurationBits, DhtTiny.ConfigBit.Reserved2) ? true : false;
+				this.reserved3.IsChecked = _dhtTiny.GetConfigurationBit(configurationBits, DhtTiny.ConfigBit.Reserved3) ? true : false;
+				this.writeConfiguration.IsChecked = _dhtTiny.GetConfigurationBit(configurationBits, DhtTiny.ConfigBit.WriteConfig) ? true : false;
+				this.resetConfiguration.IsChecked = _dhtTiny.GetConfigurationBit(configurationBits, DhtTiny.ConfigBit.ResetConfig) ? true : false;
 
-					this.EnabledCommand.RaiseCanExecuteChanged();
-					this.EnableThresholdsCommand.RaiseCanExecuteChanged();
-					this.TriggerReadingCommand.RaiseCanExecuteChanged();
-					this.Reserved1Command.RaiseCanExecuteChanged();
-					this.Reserved2Command.RaiseCanExecuteChanged();
-					this.Reserved3Command.RaiseCanExecuteChanged();
-					this.WriteConfigurationCommand.RaiseCanExecuteChanged();
-					this.ResetConfigurationCommand.RaiseCanExecuteChanged();
-					this.SettingsCommand.RaiseCanExecuteChanged();
-				}
+				this.EnabledCommand.RaiseCanExecuteChanged();
+				this.EnableThresholdsCommand.RaiseCanExecuteChanged();
+				this.TriggerReadingCommand.RaiseCanExecuteChanged();
+				this.Reserved1Command.RaiseCanExecuteChanged();
+				this.Reserved2Command.RaiseCanExecuteChanged();
+				this.Reserved3Command.RaiseCanExecuteChanged();
+				this.WriteConfigurationCommand.RaiseCanExecuteChanged();
+				this.ResetConfigurationCommand.RaiseCanExecuteChanged();
+				this.SettingsCommand.RaiseCanExecuteChanged();
 			}
 			catch (Exception ex)
 			{
 				(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
+			}
+			finally
+			{
+				_busy.Set();
 			}
 		}
 
@@ -118,7 +175,107 @@ namespace Porrey.Tiny.Dht
 			base.OnNavigatingFrom(e);
 		}
 
+		private async Task FlipConfigurationBit(DhtTiny.ConfigBit bit)
+		{
+			try
+			{
+				// ***
+				// *** Stop the timer.
+				// ***
+				_timer.Stop();
+
+				// ***
+				// *** Wait for the timer event to finish.
+				// ***
+				_busy.WaitOne();
+
+				// ***
+				// *** Get the current configuration bits.
+				// ***
+				byte configurationBits = await _dhtTiny.GetConfigurationAsync();
+
+				// ***
+				// *** Determine the value of the bit.
+				// ***
+				bool isEnabled = _dhtTiny.GetConfigurationBit(configurationBits, bit);
+
+				// ***
+				// *** Set the new configuration bit.
+				// ***
+				await _dhtTiny.SetConfigurationAsync((byte)bit, !isEnabled);
+			}
+			catch (Exception ex)
+			{
+				(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
+			}
+			finally
+			{
+				// ***
+				// *** Start the timer.
+				// ***
+				_timer.Start();
+			}
+		}
+
+		private void FindAllDhtTinyCallback(I2cScanEventArgs e)
+		{
+			int percentComplete = (int)((double)e.CurrentIndex / (double)e.Total * 100.0d);
+			this.Status = string.Format("Locating devices [0x{0:X2}] [{1}%] [Found = {2:##0}]...", e.CurrentAddress, percentComplete, e.Items.Count());
+		}
+
 		#region Values
+		private string _status = "Ready.";
+		public string Status
+		{
+			get
+			{
+				return _status;
+			}
+			set
+			{
+				this.SetProperty(ref _status, value);
+			}
+		}
+
+		private string _version = string.Empty;
+		public string Version
+		{
+			get
+			{
+				return _version;
+			}
+			set
+			{
+				this.SetProperty(ref _version, value);
+			}
+		}
+
+		private string _address = string.Empty;
+		public string Address
+		{
+			get
+			{
+				return _address;
+			}
+			set
+			{
+				this.SetProperty(ref _address, value);
+			}
+		}
+
+		private string _id = string.Empty;
+		public string Id
+		{
+			get
+			{
+				return _id;
+			}
+			set
+			{
+				this.SetProperty(ref _id, value);
+			}
+		}
+
 		private uint _readingId = 0;
 		public uint ReadingId
 		{
@@ -348,211 +505,120 @@ namespace Porrey.Tiny.Dht
 
 		private bool OnCanSettingsCommand()
 		{
-			return _dhtTiny.IsInitialized && _dhtTiny.IsEnabled;
+			return _dhtTiny != null && _dhtTiny.IsInitialized;
 		}
 
-		private void OnSettingsCommand()
+		private async void OnSettingsCommand()
 		{
+			try
+			{
+				// ***
+				// *** Stop the timer.
+				// ***
+				_timer.Stop();
+
+				// ***
+				// *** Wait for the timer event to finish.
+				// ***
+				_busy.WaitOne();
+
+				// ***
+				// *** Create and open the settings dialog.
+				// ***
+				Settings settings = new Settings(_dhtTiny);
+				await settings.ShowAsync();
+			}
+			catch (Exception ex)
+			{
+				(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
+			}
+			finally
+			{
+				// ***
+				// *** Start the timer.
+				// ***
+				_timer.Start();
+			}
 		}
 
 		private bool OnCanEnabledCommand()
 		{
-			return _dhtTiny.IsInitialized;
+			return _dhtTiny != null && _dhtTiny.IsInitialized;
 		}
 
-		private void OnEnabledCommand()
+		private async void OnEnabledCommand()
 		{
-			lock (_dhtTiny)
-			{
-				try
-				{
-					_timer.Stop();
-					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.SensorEnabled, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.SensorEnabled));
-				}
-				catch (Exception ex)
-				{
-					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
-				}
-				finally
-				{
-					_timer.Start();
-				}
-			}
+			await FlipConfigurationBit(DhtTiny.ConfigBit.SensorEnabled);
 		}
 
 		private bool OnCanEnableThresholdsCommand()
 		{
-			return _dhtTiny.IsInitialized;
+			return _dhtTiny != null && _dhtTiny.IsInitialized;
 		}
 
-		private void OnEnableThresholdsCommand()
+		private async void OnEnableThresholdsCommand()
 		{
-			lock (_dhtTiny)
-			{
-				try
-				{
-					_timer.Stop();
-					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.ThresholdEnabled, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.ThresholdEnabled));
-				}
-				catch (Exception ex)
-				{
-					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
-				}
-				finally
-				{
-					_timer.Start();
-				}
-			}
+			await FlipConfigurationBit(DhtTiny.ConfigBit.ThresholdEnabled);
 		}
 
 		private bool OnCanTriggerReadingCommand()
 		{
-			return _dhtTiny.IsInitialized;
+			return _dhtTiny != null && _dhtTiny.IsInitialized;
 		}
 
-		private void OnTriggerReadingCommand()
+		private async void OnTriggerReadingCommand()
 		{
-			lock (_dhtTiny)
-			{
-				try
-				{
-					_timer.Stop();
-					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.TriggerReading, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.TriggerReading));
-				}
-				catch (Exception ex)
-				{
-					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
-				}
-				finally
-				{
-					_timer.Start();
-				}
-			}
+			await FlipConfigurationBit(DhtTiny.ConfigBit.TriggerReading);
 		}
 
 		private bool OnCanReserved1Command()
 		{
-			return _dhtTiny.IsInitialized;
+			return _dhtTiny != null && _dhtTiny.IsInitialized;
 		}
 
-		private void OnReserved1Command()
+		private async void OnReserved1Command()
 		{
-			lock (_dhtTiny)
-			{
-				try
-				{
-					_timer.Stop();
-					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.Reserved1, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.Reserved1));
-				}
-				catch (Exception ex)
-				{
-					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
-				}
-				finally
-				{
-					_timer.Start();
-				}
-			}
+			await FlipConfigurationBit(DhtTiny.ConfigBit.Reserved1);
 		}
 
 		private bool OnCanReserved2Command()
 		{
-			return _dhtTiny.IsInitialized;
+			return _dhtTiny != null && _dhtTiny.IsInitialized;
 		}
 
-		private void OnReserved2Command()
+		private async void OnReserved2Command()
 		{
-			lock (_dhtTiny)
-			{
-				try
-				{
-					_timer.Stop();
-					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.Reserved2, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.Reserved2));
-				}
-				catch (Exception ex)
-				{
-					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
-				}
-				finally
-				{
-					_timer.Start();
-				}
-			}
+			await FlipConfigurationBit(DhtTiny.ConfigBit.Reserved2);
 		}
 
 		private bool OnCanReserved3Command()
 		{
-			return _dhtTiny.IsInitialized;
+			return _dhtTiny != null && _dhtTiny.IsInitialized;
 		}
 
-		private void OnReserved3Command()
+		private async void OnReserved3Command()
 		{
-			lock (_dhtTiny)
-			{
-				try
-				{
-					_timer.Stop();
-					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.Reserved3, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.Reserved3));
-				}
-				catch (Exception ex)
-				{
-					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
-				}
-				finally
-				{
-					_timer.Start();
-				}
-			}
+			await FlipConfigurationBit(DhtTiny.ConfigBit.Reserved3);
 		}
 
 		private bool OnCanWriteConfigurationCommand()
 		{
-			return _dhtTiny.IsInitialized;
+			return _dhtTiny != null && _dhtTiny.IsInitialized;
 		}
 
-		private void OnWriteConfigurationCommand()
+		private async void OnWriteConfigurationCommand()
 		{
-			lock (_dhtTiny)
-			{
-				try
-				{
-					_timer.Stop();
-					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.WriteConfig, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.WriteConfig));
-				}
-				catch (Exception ex)
-				{
-					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
-				}
-				finally
-				{
-					_timer.Start();
-				}
-			}
+			await FlipConfigurationBit(DhtTiny.ConfigBit.WriteConfig);
 		}
 
 		private bool OnCanResetConfigurationCommand()
 		{
-			return _dhtTiny.IsInitialized;
+			return _dhtTiny != null && _dhtTiny.IsInitialized;
 		}
 
-		private void OnResetConfigurationCommand()
+		private async void OnResetConfigurationCommand()
 		{
-			lock (_dhtTiny)
-			{
-				try
-				{
-					_timer.Stop();
-					_dhtTiny.SetConfiguration((byte)DhtTiny.ConfigBit.ResetConfig, !_dhtTiny.GetConfiguration((byte)DhtTiny.ConfigBit.ResetConfig));
-				}
-				catch (Exception ex)
-				{
-					(new MessageDialog(ex.Message)).ShowAsync().AsTask().Wait();
-				}
-				finally
-				{
-					_timer.Start();
-				}
-			}
+			await FlipConfigurationBit(DhtTiny.ConfigBit.ResetConfig);
 		}
 		#endregion
 	}

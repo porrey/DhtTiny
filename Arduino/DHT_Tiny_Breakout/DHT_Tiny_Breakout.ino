@@ -1,11 +1,4 @@
-// ***
-// *** Version
-// ***
-#define VERSION_MAJOR   1
-#define VERSION_MINOR   0
-#define VERSION_BUILD   57
-
-#include <EEPROM.h>
+#include "Version.h"
 #include "dht.h"
 #include "ByteConverter.h"
 #include "Registers.h"
@@ -14,11 +7,6 @@
 #include "MyWire.h"
 #include "Pins.h"
 #include "Debug.h"
-
-// ***
-// *** Default slave address.
-// ***
-#define I2C_SLAVE_ADDRESS 0x26
 
 // ***
 // *** Default interval used to read the DHT
@@ -71,7 +59,7 @@ void setup()
 
     // ***
     // *** The start delay is the amount of time to wait
-    // *** after power up t take a reading from the sensor.
+    // *** after power-up to take a reading from the sensor.
     // *** The data-sheets for both the DHT11 and the DHT22
     // *** state this time should be 1 second.
     // ***
@@ -101,18 +89,24 @@ void setup()
     // *** Clear status register.
     // ***
     writeFloat(REGISTER_STATUS, 0);
+  }
 
-    // ***
-    // *** Set the version.
-    // ***
-    _registers[REGISTER_VER_MAJOR] = VERSION_MAJOR;
-    _registers[REGISTER_VER_MINOR] = VERSION_MINOR;
-    _registers[REGISTER_VER_BUILD] = VERSION_BUILD;
-  }
-  else
-  {
-    displaySavedConfiguration();
-  }
+  // ***
+  // *** Set the version.
+  // ***
+  _registers[REGISTER_VER_MAJOR] = VERSION_MAJOR;
+  _registers[REGISTER_VER_MINOR] = VERSION_MINOR;
+  _registers[REGISTER_VER_BUILD] = VERSION_BUILD;
+
+  // ***
+  // *** Set the device ID.
+  // ***
+  _registers[REGISTER_ID] = 0x2D;
+
+  // ***
+  // *** Display the configurable values.
+  // ***
+  displayConfiguration();
 
   // ***
   // *** The ground of the pin is supplied
@@ -138,7 +132,14 @@ void setup()
   // ***
   // *** Setup the I2C bus.
   // ***
-  Wire.begin(I2C_SLAVE_ADDRESS);
+  byte deviceAddress = getDeviceAddress();
+
+  // ***
+  // *** Put the current device address into the register.
+  // ***
+  _registers[REGISTER_DEVICE_ADDRESS] = deviceAddress;
+
+  Wire.begin(deviceAddress);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
 }
@@ -174,6 +175,7 @@ void loop()
   checkForSensorEnabledChange();
   checkForResetConfiguration();
   checkForWriteConfiguration();
+  checkForDeviceAddressChange();
 }
 
 void receiveEvent(uint8_t byteCount)
@@ -625,5 +627,16 @@ void checkForWriteConfiguration()
     // *** Set the status bit.
     // ***
     setRegisterBit(REGISTER_STATUS, STATUS_CONFIG_SAVED , 1);
+  }
+}
+
+void checkForDeviceAddressChange()
+{
+  byte currentDeviceAddress = getDeviceAddress();
+  byte newDeviceAddress = _registers[REGISTER_DEVICE_ADDRESS];
+
+  if (newDeviceAddress != currentDeviceAddress)
+  {
+    setDeviceAddress(newDeviceAddress);
   }
 }

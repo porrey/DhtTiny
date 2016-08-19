@@ -1,3 +1,6 @@
+#ifndef PINS_H
+#define PINS_H
+
 #if defined( __AVR_ATtiny85__ )
 
 // ***
@@ -32,4 +35,5 @@
 // ***
 #define INTERRUPT_PIN 4
 
+#endif
 #endif

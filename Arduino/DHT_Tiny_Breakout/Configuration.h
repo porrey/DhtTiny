@@ -1,7 +1,14 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include <Arduino.h>
+#include <EEPROM.h>
 #include "Registers.h"
+
+// ***
+// *** Default slave address.
+// ***
+#define I2C_SLAVE_ADDRESS 0x26
 
 // ***
 // *** Defines a signature that can be used to
@@ -16,8 +23,45 @@
 // ***
 #define CONFIG_MASK   B00000011
 
+// ***
+// *** Locations of the configuration.
+// ***
 #define START_REGISTER      REGISTER_INTERVAL
 #define TOTAL_LENGTH        17
+
+// ***
+// *** Locations of the device address.
+// ***
+#define ADDRESS_SIGNATURE   TOTAL_LENGTH + 2
+#define DEVICE_ADDRESS      TOTAL_LENGTH + 3
+
+byte getDeviceAddress()
+{
+  byte returnValue = I2C_SLAVE_ADDRESS;
+
+  // ***
+  // *** If the memoery at address ADDRESS_SIGNATURE has the
+  // *** SIGNATURE byte, then we know the next position has a valid
+  // *** address.
+  // ***
+  if (EEPROM.read(ADDRESS_SIGNATURE) == SIGNATURE)
+  {
+    returnValue = EEPROM.read(DEVICE_ADDRESS);
+  }
+  else
+  {
+    EEPROM.update(ADDRESS_SIGNATURE, SIGNATURE);
+    EEPROM.update(DEVICE_ADDRESS, I2C_SLAVE_ADDRESS);
+  }
+
+  return returnValue;
+}
+
+void setDeviceAddress(byte address)
+{
+  EEPROM.update(ADDRESS_SIGNATURE, SIGNATURE);
+  EEPROM.update(DEVICE_ADDRESS, I2C_SLAVE_ADDRESS);
+}
 
 void resetConfiguration()
 {
@@ -26,10 +70,7 @@ void resetConfiguration()
   // ***
   for (int i = 0 ; i < (TOTAL_LENGTH + 1) ; i++)
   {
-    if (EEPROM.read(i) != 0)
-    {
-      EEPROM.write(i, 0);
-    }
+    EEPROM.update(i, 0);
   }
 
   // ***
@@ -99,4 +140,5 @@ bool restoreConfiguration()
 
   return returnValue;
 }
+
 #endif

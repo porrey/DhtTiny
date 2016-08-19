@@ -3,7 +3,7 @@
   "version": 1,
   "targets": {
     "UAP,Version=v10.0": {
-      "IoT.I2c/1.0.4": {
+      "IoT.I2c/1.0.6": {
         "dependencies": {
           "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0"
         },
@@ -2044,7 +2044,7 @@
       }
     },
     "UAP,Version=v10.0/win10-arm": {
-      "IoT.I2c/1.0.4": {
+      "IoT.I2c/1.0.6": {
         "dependencies": {
           "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0"
         },
@@ -4165,7 +4165,7 @@
       }
     },
     "UAP,Version=v10.0/win10-arm-aot": {
-      "IoT.I2c/1.0.4": {
+      "IoT.I2c/1.0.6": {
         "dependencies": {
           "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0"
         },
@@ -6325,7 +6325,7 @@
       }
     },
     "UAP,Version=v10.0/win10-x64": {
-      "IoT.I2c/1.0.4": {
+      "IoT.I2c/1.0.6": {
         "dependencies": {
           "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0"
         },
@@ -8455,7 +8455,7 @@
       }
     },
     "UAP,Version=v10.0/win10-x64-aot": {
-      "IoT.I2c/1.0.4": {
+      "IoT.I2c/1.0.6": {
         "dependencies": {
           "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0"
         },
@@ -10624,7 +10624,7 @@
       }
     },
     "UAP,Version=v10.0/win10-x86": {
-      "IoT.I2c/1.0.4": {
+      "IoT.I2c/1.0.6": {
         "dependencies": {
           "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0"
         },
@@ -12754,7 +12754,7 @@
       }
     },
     "UAP,Version=v10.0/win10-x86-aot": {
-      "IoT.I2c/1.0.4": {
+      "IoT.I2c/1.0.6": {
         "dependencies": {
           "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0"
         },
@@ -14924,11 +14924,12 @@
     }
   },
   "libraries": {
-    "IoT.I2c/1.0.4": {
-      "sha512": "BipDGZYqCXj7UmGsvNbhg9lpYW/IuoHbKICjKUU3FyIi9KluwCRwKMnlIFYhZKpq05LHY49/fifEJ0HRIZv+0w==",
+    "IoT.I2c/1.0.6": {
+      "sha512": "Jd1ajOh0tclq5JHMhhgeLLqot5QMWJqx5h+XocG/FiDnbqoTspBEupvozX5wH9Lxikat68HlAuY0BehHOT9PTQ==",
       "type": "package",
+      "path": "IoT.I2c/1.0.6",
       "files": [
-        "IoT.I2c.1.0.4.nupkg.sha512",
+        "IoT.I2c.1.0.6.nupkg.sha512",
         "IoT.I2c.nuspec",
         "lib/netcore/Porrey.Uwp.IoT.Sensors.I2c.dll"
       ]

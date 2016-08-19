@@ -1,24 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Windows.Devices.Enumeration;
 using Windows.Devices.I2c;
 
 namespace Porrey.Uwp.IoT.Sensors.Tiny
 {
+	public delegate void FindAllDhtTinyCallbackDelegate(I2cScanEventArgs e);
+
 	public class DhtTiny : I2c
 	{
-		private const byte REGISTER_READALL = 0;
-		private const byte REGISTER_TEMPERATURE = 1;
-		private const byte REGISTER_HUMIDITY = 5;
-		private const byte REGISTER_READING_ID = 9;
-		private const byte REGISTER_INTERVAL = 13;
-		private const byte REGISTER_UPPER_THRESHOLD = 17;
-		private const byte REGISTER_LOWER_THRESHOLD = 21;
-		private const byte REGISTER_START_DELAY = 25;
-		private const byte REGISTER_CONFIG = 29;
-		private const byte REGISTER_STATUS = 30;
-		private const byte REGISTER_VER_MAJOR = 31;
-		private const byte REGISTER_VER_MINOR = 32;
-		private const byte REGISTER_VER_BUILD = 33;
-		private const byte REGISTER_TOTAL_SIZE = 34;
+		private const byte REGISTER_ID = 0;
+		private const byte REGISTER_VER_MAJOR = 1;
+		private const byte REGISTER_VER_MINOR = 2;
+		private const byte REGISTER_VER_BUILD = 3;
+		private const byte REGISTER_TEMPERATURE = 4;
+		private const byte REGISTER_HUMIDITY = 8;
+		private const byte REGISTER_STATUS = 12;
+		private const byte REGISTER_READING_ID = 13;
+		private const byte REGISTER_INTERVAL = 17;
+		private const byte REGISTER_UPPER_THRESHOLD = 21;
+		private const byte REGISTER_LOWER_THRESHOLD = 25;
+		private const byte REGISTER_START_DELAY = 29;
+		private const byte REGISTER_CONFIG = 33;
+		private const byte REGISTER_DEVICE_ADDRESS = 34;
+
+		private const byte REGISTER_TOTAL_SIZE = 35;
 
 		// ***
 		// *** Configuration bits.
@@ -55,111 +62,105 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 		{
 		}
 
-		public bool Refresh()
+		public static async Task<IEnumerable<byte>> FindAllDhtTinyAsync(FindAllDhtTinyCallbackDelegate callback = null)
 		{
-			bool returnValue = false;
+			IList<byte> returnValue = new List<byte>();
 
-			if (this.IsInitialized)
+			// ***
+			// *** Get a selector string that will return all I2C controllers on the system
+			// ***
+			string aqs = I2cDevice.GetDeviceSelector();
+
+			// ***
+			// *** Find the I2C bus controller device with our selector string
+			// ***
+			var dis = await DeviceInformation.FindAllAsync(aqs).AsTask();
+
+			if (dis.Count > 0)
 			{
-				// ***
-				// *** Set the register address to 0.
-				// ***
-				this.Device.Write(new byte[] { 0 });
+				const int minimumAddress = 8;
+				const int maximumAddress = 77;
 
-				// ***
-				// *** Read all of the registers.
-				// ***
-				byte[] readBuffer = new byte[REGISTER_TOTAL_SIZE];
-				this.Device.Read(readBuffer);
+				for (byte address = minimumAddress; address <= maximumAddress; address++)
+				{
+					// ***
+					// *** Invoke the callback for progress upates.
+					// ***
+					if (callback != null)
+					{
+						callback.Invoke(new I2cScanEventArgs(address, address - minimumAddress, maximumAddress - minimumAddress, returnValue));
+					}
 
-				this.Temperature = BitConverter.ToSingle(readBuffer, REGISTER_TEMPERATURE);
-				this.Humidity = BitConverter.ToSingle(readBuffer, REGISTER_HUMIDITY);
-				this.Interval = BitConverter.ToUInt32(readBuffer, REGISTER_INTERVAL);
-				this.ReadingId = BitConverter.ToUInt32(readBuffer, REGISTER_READING_ID);
-				this.UpperThreshold = BitConverter.ToSingle(readBuffer, REGISTER_UPPER_THRESHOLD);
-				this.LowerThreshold = BitConverter.ToSingle(readBuffer, REGISTER_LOWER_THRESHOLD);
-				this.StartDelay = BitConverter.ToUInt32(readBuffer, REGISTER_START_DELAY);
-				this.Configuration = readBuffer[REGISTER_CONFIG];
-				this.Status = readBuffer[REGISTER_STATUS];
-			}
-			else
-			{
-				throw new DeviceNotInitializedException();
+					var settings = new I2cConnectionSettings(address);
+					settings.BusSpeed = I2cBusSpeed.FastMode;
+					settings.SharingMode = I2cSharingMode.Shared;
+
+					// ***
+					// *** Create an I2cDevice with our selected bus controller and I2C settings
+					// ***
+					using (I2cDevice device = await I2cDevice.FromIdAsync(dis[0].Id, settings))
+					{
+						if (device != null)
+						{
+							try
+							{
+								byte[] writeBuffer = new byte[1] { REGISTER_ID };
+								device.Write(writeBuffer);
+								byte[] readBuffer = new byte[1];
+								device.Read(readBuffer);
+
+								if (readBuffer[0] == 0x2D)
+								{
+									returnValue.Add(address);
+								}
+							}
+							catch
+							{
+								// ***
+								// *** If the address is invalid, an exception will be thrown.
+								// ***
+							}
+						}
+					}
+				}
 			}
 
 			return returnValue;
 		}
 
-		#region Cache Members
-		// ***
-		// *** These members access the cached values that
-		// *** get updated with each call to Refresh();
-		// ***
-		public float Temperature { get; private set; }
-		public float Humidity { get; private set; }
-		public uint Interval { get; private set; }
-		public uint ReadingId { get; private set; }
-		public float UpperThreshold { get; private set; }
-		public float LowerThreshold { get; private set; }
-		public uint StartDelay { get; private set; }
-		public byte Configuration { get; private set; }
-		public byte Status { get; private set; }
-
-		public bool GetStatusBit(DhtTiny.StatusBit bitIndex)
+		public bool GetStatusBit(byte status, DhtTiny.StatusBit bitIndex)
 		{
-			return Bit.Get(this.Status, (byte)bitIndex);
+			return Bit.Get(status, (byte)bitIndex);
 		}
 
-		public bool GetConfigurationBit(DhtTiny.ConfigBit bitIndex)
+		public bool GetConfigurationBit(byte configuration, DhtTiny.ConfigBit bitIndex)
 		{
-			return Bit.Get(this.Configuration, (byte)bitIndex);
+			return Bit.Get(configuration, (byte)bitIndex);
 		}
 
-		public bool IsEnabled
+		public async Task<bool> GetIsEnabledAsync()
 		{
-			get
-			{
-				return this.GetConfigurationBit(ConfigBit.SensorEnabled);
-			}
+			return ((await this.GetConfigurationAsync() & (1 << (byte)ConfigBit.SensorEnabled)) == 1) ? true : false;
 		}
 
-		public bool ThresholdsAreEnabled
+		public async Task<bool> SetIsEnabledAsync(bool enable)
 		{
-			get
-			{
-				return this.GetConfigurationBit(ConfigBit.ThresholdEnabled);
-			}
-		}
-		#endregion
-
-		#region Real-time Members
-		// ***
-		// *** These methods are dynamic - they communicate with the
-		// *** device each time they are called.
-		// ***
-		public bool GetIsEnabled()
-		{
-			return ((this.GetConfiguration() & (1 << (byte)ConfigBit.SensorEnabled)) == 1) ? true : false;
+			byte config = Bit.Set(await this.GetConfigurationAsync(), (byte)ConfigBit.SensorEnabled, enable);
+			return await this.SetConfigurationAsync(config);
 		}
 
-		public void SetIsEnabled(bool enable)
+		public async Task<bool> GetThresholdsAreEnabledAsync()
 		{
-			byte config = Bit.Set(this.GetConfiguration(), (byte)ConfigBit.SensorEnabled, enable);
-			this.SetConfiguration(config);
+			return ((await this.GetConfigurationAsync() & (1 << (byte)ConfigBit.ThresholdEnabled)) == 1) ? true : false;
 		}
 
-		public bool GetThresholdsAreEnabled()
+		public async Task<bool> SetThresholdsAreEnabled(bool enable)
 		{
-				return ((this.GetConfiguration() & (1 << (byte)ConfigBit.ThresholdEnabled)) == 1) ? true : false;
+			byte config = Bit.Set(await this.GetConfigurationAsync(), (byte)ConfigBit.ThresholdEnabled, enable);
+			return await this.SetConfigurationAsync(config);
 		}
 
-		public void SetThresholdsAreEnabled(bool enable)
-		{
-				byte config = Bit.Set(this.GetConfiguration(), (byte)ConfigBit.ThresholdEnabled, enable);
-				this.SetConfiguration(config);
-		}
-
-		public float GetTemperature()
+		public async Task<float> GetTemperatureAsync()
 		{
 			float returnValue = 0;
 
@@ -169,14 +170,13 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_TEMPERATURE };
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 
 				// ***
-				// *** Write the register value and read from the device
-				// *** at the same time.
+				// *** Read from the device.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.Read(readBuffer);
+				await this.ReadAsync(readBuffer);
 				returnValue = BitConverter.ToSingle(readBuffer, 0);
 			}
 			else
@@ -187,7 +187,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public float GetHumidity()
+		public async Task<float> GetHumidityAsync()
 		{
 			float returnValue = 0;
 
@@ -197,14 +197,13 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_HUMIDITY };
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 
 				// ***
-				// *** Write the register value and read from the device
-				// *** at the same time.
+				// *** Read from the device.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.Read(readBuffer);
+				await this.ReadAsync(readBuffer);
 				returnValue = BitConverter.ToSingle(readBuffer, 0);
 			}
 			else
@@ -215,7 +214,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public uint GetInterval()
+		public async Task<uint> GetIntervalAsync()
 		{
 			uint returnValue = 0;
 
@@ -225,14 +224,13 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_INTERVAL };
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 
 				// ***
-				// *** Write the register value and read from the device
-				// *** at the same time.
+				// *** Read from the device.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.Read(readBuffer);
+				await this.ReadAsync(readBuffer);
 				returnValue = BitConverter.ToUInt32(readBuffer, 0);
 			}
 			else
@@ -243,7 +241,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public bool SetInterval(uint value)
+		public async Task<bool> SetIntervalAsync(uint value)
 		{
 			bool returnValue = false;
 
@@ -258,7 +256,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Write the register value and the value.
 				// ***
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 				returnValue = true;
 			}
 			else
@@ -269,7 +267,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public uint GetReadingId()
+		public async Task<uint> GetStartDelayAsync()
 		{
 			uint returnValue = 0;
 
@@ -278,15 +276,14 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** The register ID
 				// ***
-				byte[] writeBuffer = new byte[1] { REGISTER_READING_ID };
-				this.Device.Write(writeBuffer);
+				byte[] writeBuffer = new byte[1] { REGISTER_START_DELAY };
+				await this.WriteAsync(writeBuffer);
 
 				// ***
-				// *** Write the register value and read from the device
-				// *** at the same time.
+				// *** Read from the device.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.Read(readBuffer);
+				await this.ReadAsync(readBuffer);
 				returnValue = BitConverter.ToUInt32(readBuffer, 0);
 			}
 			else
@@ -297,7 +294,60 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public float GetUpperThreshold()
+		public async Task<bool> SetStartDelayAsync(uint value)
+		{
+			bool returnValue = false;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] data = BitConverter.GetBytes(value);
+				byte[] writeBuffer = new byte[5] { REGISTER_START_DELAY, data[0], data[1], data[2], data[3] };
+
+				// ***
+				// *** Write the register value and the value.
+				// ***
+				await this.WriteAsync(writeBuffer);
+				returnValue = true;
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public async Task<uint> GetReadingIdAsync()
+		{
+			uint returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_READING_ID };
+				await this.WriteAsync(writeBuffer);
+
+				// ***
+				// *** Read from the device.
+				// ***
+				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
+				await this.ReadAsync(readBuffer);
+				returnValue = BitConverter.ToUInt32(readBuffer, 0);
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public async Task<float> GetUpperThresholdAsync()
 		{
 			float returnValue = 0;
 
@@ -307,14 +357,13 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_UPPER_THRESHOLD };
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 
 				// ***
-				// *** Write the register value and read from the device
-				// *** at the same time.
+				// *** Read from the device.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.Read(readBuffer);
+				await this.ReadAsync(readBuffer);
 				returnValue = BitConverter.ToSingle(readBuffer, 0);
 			}
 			else
@@ -325,7 +374,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public bool SetUpperThreshold(float value)
+		public async Task<bool> SetUpperThresholdAsync(float value)
 		{
 			bool returnValue = false;
 
@@ -340,8 +389,8 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Write the register value and the value.
 				// ***
-				this.Device.Write(writeBuffer);
-				returnValue = (this.GetUpperThreshold() == value);
+				await this.WriteAsync(writeBuffer);
+				returnValue = (await this.GetUpperThresholdAsync() == value);
 			}
 			else
 			{
@@ -351,7 +400,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public float GetLowerThreshold()
+		public async Task<float> GetLowerThresholdAsync()
 		{
 			float returnValue = 0;
 
@@ -361,14 +410,13 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_LOWER_THRESHOLD };
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 
 				// ***
-				// *** Write the register value and read from the device
-				// *** at the same time.
+				// *** Read from the device.
 				// ***
 				byte[] readBuffer = new byte[4] { 0, 0, 0, 0 };
-				this.Device.Read(readBuffer);
+				await this.ReadAsync(readBuffer);
 				returnValue = BitConverter.ToSingle(readBuffer, 0);
 			}
 			else
@@ -379,7 +427,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public bool SetLowerThreshold(float value)
+		public async Task<bool> SetLowerThresholdAsync(float value)
 		{
 			bool returnValue = false;
 
@@ -392,9 +440,9 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				byte[] writeBuffer = new byte[5] { REGISTER_LOWER_THRESHOLD, data[0], data[1], data[2], data[3] };
 
 				// ***
-				// *** Write the register value and the value.
+				// *** Read from the device.
 				// ***
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 				returnValue = true;
 			}
 			else
@@ -405,7 +453,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public byte GetStatus()
+		public async Task<byte> GetStatusAsync()
 		{
 			byte returnValue = 0;
 
@@ -415,14 +463,13 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_STATUS };
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 
 				// ***
-				// *** Write the register value and read from the device
-				// *** at the same time.
+				// *** Read from the device.
 				// ***
 				byte[] readBuffer = new byte[1] { 0 };
-				this.Device.Read(readBuffer);
+				await this.ReadAsync(readBuffer);
 				returnValue = readBuffer[0];
 			}
 			else
@@ -433,7 +480,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public byte GetConfiguration()
+		public async Task<byte> GetConfigurationAsync()
 		{
 			byte returnValue = 0;
 
@@ -443,14 +490,13 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// *** The register ID
 				// ***
 				byte[] writeBuffer = new byte[1] { REGISTER_CONFIG };
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 
 				// ***
-				// *** Write the register value and read from the device
-				// *** at the same time.
+				// *** Read from the device.
 				// ***
 				byte[] readBuffer = new byte[1] { 0 };
-				this.Device.Read(readBuffer);
+				await this.ReadAsync(readBuffer);
 				returnValue = readBuffer[0];
 			}
 			else
@@ -461,12 +507,12 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public bool GetConfiguration(byte position)
+		public async Task<bool> GetConfigurationAsync(byte position)
 		{
-			return Bit.Get(this.GetConfiguration(), position);
+			return Bit.Get(await this.GetConfigurationAsync(), position);
 		}
 
-		public bool SetConfiguration(byte value)
+		public async Task<bool> SetConfigurationAsync(byte value)
 		{
 			bool returnValue = false;
 
@@ -480,7 +526,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Write the register value and the value.
 				// ***
-				this.Device.Write(writeBuffer);
+				await this.WriteAsync(writeBuffer);
 
 				returnValue = true;
 			}
@@ -492,7 +538,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			return returnValue;
 		}
 
-		public bool SetConfiguration(byte position, bool bit)
+		public async Task<bool> SetConfigurationAsync(byte position, bool bit)
 		{
 			bool returnValue = false;
 
@@ -501,7 +547,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Get the current configuration value.
 				// ***
-				byte currentValue = this.GetConfiguration();
+				byte currentValue = await this.GetConfigurationAsync();
 
 				// ***
 				// *** Set the bit.
@@ -511,7 +557,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				// ***
 				// *** Write the new value.
 				// ***
-				returnValue = this.SetConfiguration(currentValue);
+				returnValue = await this.SetConfigurationAsync(currentValue);
 			}
 			else
 			{
@@ -520,6 +566,148 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 
 			return returnValue;
 		}
-		#endregion
+
+		public async Task<byte> GetDeviceIdAsync()
+		{
+			byte returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_ID };
+				await this.WriteAsync(writeBuffer);
+
+				// ***
+				// *** Read from the device.
+				// ***
+				byte[] readBuffer = new byte[1] { 0 };
+				await this.ReadAsync(readBuffer);
+				returnValue = readBuffer[0];
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public async Task<byte> GetDeviceAddressAsync()
+		{
+			byte returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_DEVICE_ADDRESS };
+				await this.WriteAsync(writeBuffer);
+
+				// ***
+				// *** Read from the device.
+				// ***
+				byte[] readBuffer = new byte[1] { 0 };
+				await this.ReadAsync(readBuffer);
+				returnValue = readBuffer[0];
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public async Task<byte> GetFirmwareMajorVersionAsync()
+		{
+			byte returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_VER_MAJOR };
+				await this.WriteAsync(writeBuffer);
+
+				// ***
+				// *** Read from the device.
+				// ***
+				byte[] readBuffer = new byte[1] { 0 };
+				await this.ReadAsync(readBuffer);
+				returnValue = readBuffer[0];
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public async Task<byte> GetFirmwareMinorVersionAsync()
+		{
+			byte returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_VER_MINOR };
+				await this.WriteAsync(writeBuffer);
+
+				// ***
+				// *** Read from the device.
+				// ***
+				byte[] readBuffer = new byte[1] { 0 };
+				await this.ReadAsync(readBuffer);
+				returnValue = readBuffer[0];
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public async Task<byte> GetFirmwareBuildVersionAsync()
+		{
+			byte returnValue = 0;
+
+			if (this.IsInitialized)
+			{
+				// ***
+				// *** The register ID
+				// ***
+				byte[] writeBuffer = new byte[1] { REGISTER_VER_BUILD };
+				await this.WriteAsync(writeBuffer);
+
+				// ***
+				// *** Read from the device.
+				// ***
+				byte[] readBuffer = new byte[1] { 0 };
+				await this.ReadAsync(readBuffer);
+				returnValue = readBuffer[0];
+			}
+			else
+			{
+				throw new DeviceNotInitializedException();
+			}
+
+			return returnValue;
+		}
+
+		public async Task<string> GetFirmwareVersionAsync()
+		{
+			return string.Format("{0}.{1} (Build {2})",
+						(await this.GetFirmwareMajorVersionAsync()).ToString(),
+						(await this.GetFirmwareMinorVersionAsync()).ToString(),
+						(await this.GetFirmwareBuildVersionAsync()).ToString());
+		}
 	}
 }

@@ -109,6 +109,7 @@
   <ItemGroup>
     <Compile Include="Bit.cs" />
     <Compile Include="DhtTiny.cs" />
+    <Compile Include="I2cScanEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Porrey.Uwp.IoT.Sensors.DhtTiny.rd.xml" />
   </ItemGroup>

@@ -1,3 +1,6 @@
+#ifndef MY_WIRE_H
+#define MY_WIRE_H
+
 #if defined( __AVR_ATtiny85__ )
 
 // ***
@@ -23,4 +26,5 @@ USI_TWI_S Wire;
 #define WireSend(a)     Wire.write(a)
 #define WireDelay(a)    delay(a);
 
+#endif
 #endif
