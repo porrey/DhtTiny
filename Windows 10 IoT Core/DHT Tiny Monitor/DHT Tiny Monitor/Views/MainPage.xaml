@@ -11,7 +11,7 @@
 
 	<common:BindablePage.Resources>
 		<font:FontFamily x:Key="FontFamily">Segoe UI</font:FontFamily>
-		<x:Double x:Key="RegisterLabelFontSize">18</x:Double>
+		<x:Double x:Key="RegisterLabelFontSize">17</x:Double>
 		<x:Double x:Key="BitValueFontSize">54</x:Double>
 		<x:Double x:Key="SliderFontSize">16</x:Double>
 	</common:BindablePage.Resources>
@@ -21,7 +21,7 @@
 			<RowDefinition Height="150" />
 			<RowDefinition Height="350" />
 			<RowDefinition Height="*" />
-			<RowDefinition Height="85" />
+			<RowDefinition Height="65" />
 		</Grid.RowDefinitions>
 
 		<!-- Header -->
@@ -843,7 +843,7 @@
 				BorderBrush="#5b9bd5"
 				BorderThickness="2"
 				Background="#c6974f"
-				Margin="15,15,15,15">
+				Margin="15,0,15,15">
 			<Grid>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*" />
@@ -853,10 +853,11 @@
 				</Grid.ColumnDefinitions>
 
 				<TextBlock Grid.Column="0"
+						   Grid.ColumnSpan="4"
 						   Text="{x:Bind Status, Mode=OneWay}"
 						   VerticalAlignment="Center"
 						   HorizontalAlignment="Left"
-						   Style="{ThemeResource SubheaderTextBlockStyle}"
+						   Style="{ThemeResource TitleTextBlockStyle}"
 						   Margin="10,0,10,0"
 						   Foreground="Black"/>
 
@@ -864,7 +865,7 @@
 						   Text="{x:Bind Version, Mode=OneWay}"
 						   VerticalAlignment="Center"
 						   HorizontalAlignment="Center"
-						   Style="{ThemeResource SubheaderTextBlockStyle}"
+						   Style="{ThemeResource TitleTextBlockStyle}"
 						   Margin="10,0,10,0"
 						   Foreground="Black" />
 
@@ -872,7 +873,7 @@
 						   Text="{x:Bind Address, Mode=OneWay}"
 						   VerticalAlignment="Center"
 						   HorizontalAlignment="Center"
-						   Style="{ThemeResource SubheaderTextBlockStyle}"
+						   Style="{ThemeResource TitleTextBlockStyle}"
 						   Margin="10,0,10,0"
 						   Foreground="Black" />
 
@@ -880,7 +881,7 @@
 						   Text="{x:Bind Id, Mode=OneWay}"
 						   VerticalAlignment="Center"
 						   HorizontalAlignment="Center"
-						   Style="{ThemeResource SubheaderTextBlockStyle}"
+						   Style="{ThemeResource TitleTextBlockStyle}"
 						   Margin="10,0,10,0"
 						   Foreground="Black" />
 			</Grid>

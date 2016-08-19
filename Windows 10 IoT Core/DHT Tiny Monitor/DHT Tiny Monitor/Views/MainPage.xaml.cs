@@ -36,9 +36,7 @@ namespace Porrey.Tiny.Dht.Views
 			try
 			{
 				// ***
-				// *** Find all devices on the bus. This code may take up to a minute
-				// *** and should not be used permanently. It is included here as a
-				// *** deonstration on how to locate the device on the i2c bus.
+				// *** Find all devices on the bus.
 				// ***
 				IEnumerable<byte> address = await DhtTiny.FindAllDhtTinyAsync(this.FindAllDhtTinyCallback);
 
@@ -63,7 +61,7 @@ namespace Porrey.Tiny.Dht.Views
 						// ***
 						_timer.Start();
 
-						this.Status = "Ready.";
+						this.Status = "Connected/Monitoring.";
 					}
 					else
 					{
