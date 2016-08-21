@@ -8,6 +8,7 @@ void initDebug() {}
 void displayRegisters() {}
 void displaySavedConfiguration() {}
 void displayDeviceAddress() { }
+void displayConfiguration() {}
 #else
 void initDebug()
 {
