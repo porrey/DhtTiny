@@ -1,19 +1,19 @@
 // Copyright © 2016 Daniel Porrey. All Rights Reserved.
 //
 // This file is part of the DHT Tiny project.
-// 
+//
 // DHT Tiny is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // DHT Tiny is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
-// along with DHT Tiny. If not, 
+// along with DHT Tiny. If not,
 // see http://www.gnu.org/licenses/.
 //
 
@@ -68,9 +68,6 @@ volatile uint8_t _requestCount = 0;
 
 void setup()
 {
-  initDebug();
-  displayRegisters();
-
   // ***
   // *** Restore the configuration from EEPROM. If the configuration
   // *** could not be restord, set the default values.
@@ -134,11 +131,6 @@ void setup()
   _registers[REGISTER_ID] = 0x2D;
 
   // ***
-  // *** Display the configurable values.
-  // ***
-  displayConfiguration();
-
-  // ***
   // *** The ground of the pin is supplied
   // *** by the pin DHT_POWER_PIN. This
   // *** allows the DHT to be turned off
@@ -165,14 +157,26 @@ void setup()
   byte deviceAddress = getDeviceAddress();
 
   // ***
+  // *** Write the DHT model to the register.
+  // ***
+  _registers[REGISTER_DHT_MODEL] = getDhtModel();
+
+  // ***
   // *** Put the current device address into the register.
   // ***
   _registers[REGISTER_DEVICE_ADDRESS] = deviceAddress;
-  displayDeviceAddress();
 
   Wire.begin(deviceAddress);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
+
+  // ***
+  // *** Debug information.
+  // ***
+  initDebug();
+  displayRegisters();
+  displayConfiguration();
+  displayDeviceAddress();
 }
 
 void loop()
@@ -207,6 +211,7 @@ void loop()
   checkForResetConfiguration();
   checkForWriteConfiguration();
   checkForDeviceAddressChange();
+  checkForDhtModelChange();
 }
 
 void receiveEvent(uint8_t byteCount)
@@ -432,15 +437,23 @@ void readSensor()
     static uint32_t index = 0;
 
     // ***
-    // *** Update the temperature and humidity registers.
+    // *** Update the temperature and humidity registers
+    // *** on the DHT.
     // ***
-    uint8_t chk = _dht.read22(DHT_READING_PIN);
+    uint8_t dhtModel = _registers[REGISTER_DHT_MODEL];
+    uint8_t result = updateDht(dhtModel, DHT_READING_PIN);
 
     // ***
     // *** Check for a valid read from the sensor.
     // ***
-    if (chk == DHTLIB_OK)
+    if (result == DHTLIB_OK)
     {
+      // ***
+      // *** Update the status register to indicate that
+      // *** the sensor reading was successful.
+      // ***
+      setRegisterBit(REGISTER_STATUS, STATUS_DHT_READING_ERROR, 0);
+
       // ***
       // *** Write the temperature to the register buffers.
       // ***
@@ -462,7 +475,39 @@ void readSensor()
       // ***
       _lastReading = millis();
     }
+    else
+    {
+      // ***
+      // *** Update the status register to indicate that
+      // *** the sensor reading failed.
+      // ***
+      setRegisterBit(REGISTER_STATUS, STATUS_DHT_READING_ERROR, 1);
+    }
   }
+}
+
+uint8_t updateDht(uint8_t dhtModel, uint8_t dhtDataPin)
+{
+  uint8_t returnValue = -1;
+
+  switch (dhtModel)
+  {
+    case DHT_MODEL_11:
+      returnValue = _dht.read11(dhtDataPin);
+      break;
+    case DHT_MODEL_21:
+    case DHT_MODEL_22:
+      returnValue = _dht.read22(dhtDataPin);
+      break;
+    case DHT_MODEL_33:
+      returnValue = _dht.read33(dhtDataPin);
+      break;
+    case DHT_MODEL_44:
+      returnValue = _dht.read44(dhtDataPin);
+      break;
+  }
+
+  return returnValue;
 }
 
 void checkForSensorEnabledChange()
@@ -663,11 +708,22 @@ void checkForWriteConfiguration()
 
 void checkForDeviceAddressChange()
 {
-  byte currentDeviceAddress = getDeviceAddress();
-  byte newDeviceAddress = _registers[REGISTER_DEVICE_ADDRESS];
+  byte currentValue = getDeviceAddress();
+  byte newValue = _registers[REGISTER_DEVICE_ADDRESS];
 
-  if (newDeviceAddress != currentDeviceAddress)
+  if (newValue != currentValue)
   {
-    setDeviceAddress(newDeviceAddress);
+    setDeviceAddress(newValue);
+  }
+}
+
+void checkForDhtModelChange()
+{
+  byte currentValue = getDhtModel();
+  byte newValue = _registers[REGISTER_DHT_MODEL];
+
+  if (newValue != currentValue)
+  {
+    setDhtModel(newValue);
   }
 }

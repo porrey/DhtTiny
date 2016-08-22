@@ -28,27 +28,29 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 
 	public class DhtTiny : I2c
 	{
-		private const byte REGISTER_ID = 0;
-		private const byte REGISTER_VER_MAJOR = 1;
-		private const byte REGISTER_VER_MINOR = 2;
-		private const byte REGISTER_VER_BUILD = 3;
-		private const byte REGISTER_TEMPERATURE = 4;
-		private const byte REGISTER_HUMIDITY = 8;
-		private const byte REGISTER_STATUS = 12;
-		private const byte REGISTER_READING_ID = 13;
-		private const byte REGISTER_INTERVAL = 17;
-		private const byte REGISTER_UPPER_THRESHOLD = 21;
-		private const byte REGISTER_LOWER_THRESHOLD = 25;
-		private const byte REGISTER_START_DELAY = 29;
-		private const byte REGISTER_CONFIG = 33;
-		private const byte REGISTER_DEVICE_ADDRESS = 34;
+        private const byte REGISTER_ID = 0;
+        private const byte REGISTER_VER_MAJOR = 1;
+        private const byte REGISTER_VER_MINOR = 2;
+        private const byte REGISTER_VER_BUILD = 3;
+        private const byte REGISTER_TEMPERATURE = 4;
+        private const byte REGISTER_HUMIDITY = 8;
+        private const byte REGISTER_STATUS = 12;
+        private const byte REGISTER_READING_ID = 13;
+        private const byte REGISTER_INTERVAL = 17;
+        private const byte REGISTER_UPPER_THRESHOLD = 21;
+        private const byte REGISTER_LOWER_THRESHOLD = 25;
+        private const byte REGISTER_START_DELAY = 29;
+        private const byte REGISTER_CONFIG = 33;
+        private const byte REGISTER_DEVICE_ADDRESS = 34;
+        private const byte REGISTER_DHT_MODEL = 35;
 
-		private const byte REGISTER_TOTAL_SIZE = 35;
+        private const byte REGISTER_TOTAL_SIZE = 36;
 
-		// ***
-		// *** Configuration bits.
-		// ***
-		public enum ConfigBit
+
+        // ***
+        // *** Configuration bits.
+        // ***
+        public enum ConfigBit
 		{
 			SensorEnabled = 0,
 			ThresholdEnabled = 1,
@@ -68,7 +70,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 			IsEnabled = 0,
 			UpperThresholdExceeded = 1,
 			LowerThresholdExceeded = 2,
-			Reserved1 = 3,
+			DhtReadError = 3,
 			Reserved2 = 4,
 			ConfigSaved = 5,
 			ReadError = 6,
@@ -746,5 +748,56 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 						(await this.GetFirmwareMinorVersionAsync()).ToString(),
 						(await this.GetFirmwareBuildVersionAsync()).ToString());
 		}
-	}
+
+        public async Task<byte> GetDeviceModelAsync()
+        {
+            byte returnValue = 0;
+
+            if (this.IsInitialized)
+            {
+                // ***
+                // *** The register ID
+                // ***
+                byte[] writeBuffer = new byte[1] { REGISTER_DHT_MODEL };
+                await this.WriteAsync(writeBuffer);
+
+                // ***
+                // *** Read from the device.
+                // ***
+                byte[] readBuffer = new byte[1] { 0 };
+                await this.ReadAsync(readBuffer);
+                returnValue = readBuffer[0];
+            }
+            else
+            {
+                throw new DeviceNotInitializedException();
+            }
+
+            return returnValue;
+        }
+
+        public async Task<bool> SetDeviceModelAsync(byte value)
+        {
+            bool returnValue = false;
+
+            if (this.IsInitialized)
+            {
+                // ***
+                // *** The register ID
+                // ***
+                byte[] writeBuffer = new byte[2] { REGISTER_DHT_MODEL, value };
+
+                // ***
+                // *** Write the register value and the value.
+                // ***
+                returnValue = await this.WriteAsync(writeBuffer);
+            }
+            else
+            {
+                throw new DeviceNotInitializedException();
+            }
+
+            return returnValue;
+        }
+    }
 }

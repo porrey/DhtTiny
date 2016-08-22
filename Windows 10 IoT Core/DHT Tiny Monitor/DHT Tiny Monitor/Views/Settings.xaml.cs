@@ -17,6 +17,7 @@
 // see http://www.gnu.org/licenses/.
 //
 using System;
+using System.Linq;
 using Porrey.Uwp.IoT.Sensors.Tiny;
 using Windows.UI.Popups;
 using Windows.UI.Xaml.Controls;
@@ -31,6 +32,21 @@ namespace DhtTinyMonitor.Views
 		private float _upperThreshold = 0f;
 		private UInt32 _startDelay = 0;
 		private byte _address = 0;
+		private byte _model = 0;
+		private ModelItem[] _models = new ModelItem[]
+				{
+					new ModelItem() { Index= 0, Model = 11},
+					new ModelItem() { Index= 1, Model = 21},
+					new ModelItem() { Index= 2, Model = 22},
+					new ModelItem() { Index= 3, Model = 33},
+					new ModelItem() { Index= 4, Model = 44},
+				};
+
+		private class ModelItem
+		{
+			public int Index { get; set; }
+			public byte Model { get; set; }
+		}
 
 		public Settings(DhtTiny dhtTiny)
 		{
@@ -52,6 +68,7 @@ namespace DhtTinyMonitor.Views
 				_upperThreshold = await _dhtTiny.GetUpperThresholdAsync();
 				_startDelay = await _dhtTiny.GetStartDelayAsync();
 				_address = await _dhtTiny.GetDeviceAddressAsync();
+				_model = await _dhtTiny.GetDeviceModelAsync();
 
 				// ***
 				// *** Update the dialog.
@@ -61,6 +78,7 @@ namespace DhtTinyMonitor.Views
 				this.upperThreshold.Value = _upperThreshold;
 				this.startDelay.Value = _startDelay;
 				this.address.Value = _address;
+				this.model.SelectedIndex = _models.Where(t => t.Model == _model).Select(t => t.Index).FirstOrDefault();
 			}
 			catch (Exception ex)
 			{
@@ -80,6 +98,7 @@ namespace DhtTinyMonitor.Views
 				float upperThreshold = Convert.ToUInt32(this.upperThreshold.Value);
 				UInt32 startDelay = Convert.ToUInt32(this.startDelay.Value);
 				byte address = Convert.ToByte(this.address.Value);
+				byte model = _models.Where(t => t.Index == this.model.SelectedIndex).Select(t => t.Model).FirstOrDefault();
 
 				// ***
 				// *** Update only values that have changed.
@@ -89,6 +108,7 @@ namespace DhtTinyMonitor.Views
 				if (_upperThreshold != upperThreshold) await _dhtTiny.SetUpperThresholdAsync(upperThreshold);
 				if (_startDelay != startDelay) await _dhtTiny.SetStartDelayAsync(startDelay);
 				if (_address != address) await _dhtTiny.SetDeviceAddressAsync(address);
+				if (_model != model) await _dhtTiny.SetDeviceModelAsync(model);
 			}
 			catch (Exception ex)
 			{

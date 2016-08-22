@@ -24,6 +24,16 @@
 #include "Registers.h"
 
 // ***
+// *** Supported DHT Models
+// ***
+#define DHT_MODEL_11          11
+#define DHT_MODEL_21          21
+#define DHT_MODEL_22          22
+#define DHT_MODEL_33          33
+#define DHT_MODEL_44          44
+#define DHT_MODEL_DEFAULT     DHT_MODEL_22
+
+// ***
 // *** Default slave address.
 // ***
 #define I2C_SLAVE_ADDRESS 0x26
@@ -52,13 +62,15 @@
 // ***
 #define ADDRESS_SIGNATURE   TOTAL_LENGTH + 2
 #define DEVICE_ADDRESS      TOTAL_LENGTH + 3
+#define MODEL_SIGNATURE     TOTAL_LENGTH + 4
+#define DHT_MODEL           TOTAL_LENGTH + 5
 
-byte getDeviceAddress()
+uint8_t getDeviceAddress()
 {
-  byte returnValue = I2C_SLAVE_ADDRESS;
+  uint8_t returnValue = I2C_SLAVE_ADDRESS;
 
   // ***
-  // *** If the memoery at address ADDRESS_SIGNATURE has the
+  // *** If the memory at address ADDRESS_SIGNATURE has the
   // *** SIGNATURE byte, then we know the next position has a valid
   // *** address.
   // ***
@@ -81,12 +93,52 @@ void setDeviceAddress(byte address)
   EEPROM.update(DEVICE_ADDRESS, address);
 }
 
+void resetDeviceAddress()
+{
+  EEPROM.update(ADDRESS_SIGNATURE, 0);
+  EEPROM.update(DEVICE_ADDRESS, 0);
+}
+
+uint8_t getDhtModel()
+{
+  uint8_t returnValue = DHT_MODEL_DEFAULT;
+
+  // ***
+  // *** If the memory at address ADDRESS_SIGNATURE has the
+  // *** SIGNATURE byte, then we know the next position has a valid
+  // *** address.
+  // ***
+  if (EEPROM.read(MODEL_SIGNATURE) == SIGNATURE)
+  {
+    returnValue = EEPROM.read(DHT_MODEL);
+  }
+  else
+  {
+    EEPROM.update(MODEL_SIGNATURE, SIGNATURE);
+    EEPROM.update(DHT_MODEL, DHT_MODEL_DEFAULT);
+  }
+
+  return returnValue;
+}
+
+void setDhtModel(byte model)
+{
+  EEPROM.update(MODEL_SIGNATURE, SIGNATURE);
+  EEPROM.update(DHT_MODEL, model);
+}
+
+void resetDhtModel()
+{
+  EEPROM.update(MODEL_SIGNATURE, 0);
+  EEPROM.update(DHT_MODEL, 0);
+}
+
 void resetConfiguration()
 {
   // ***
   // *** Set
   // ***
-  for (int i = 0 ; i < (TOTAL_LENGTH + 1) ; i++)
+  for (uint16_t i = 0 ; i < (TOTAL_LENGTH + 1) ; i++)
   {
     EEPROM.update(i, 0);
   }
@@ -108,7 +160,7 @@ void saveConfiguration()
   // ***
   // *** Copy a portion of the registers to the ERPROM.
   // ***
-  for (int i = 1 ; i < TOTAL_LENGTH - 1 ; i++)
+  for (uint16_t i = 1 ; i < TOTAL_LENGTH - 1 ; i++)
   {
     EEPROM.update(i, _registers[START_REGISTER + (i - 1)]);
   }
@@ -139,7 +191,7 @@ bool restoreConfiguration()
     // ***
     // *** Copy a portion of the registers from the ERPROM.
     // ***
-    for (int i = 1 ; i < TOTAL_LENGTH - 1 ; i++)
+    for (uint16_t i = 1 ; i < TOTAL_LENGTH - 1 ; i++)
     {
       _registers[START_REGISTER + (i - 1)] = EEPROM.read(i);
     }

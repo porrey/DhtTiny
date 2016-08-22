@@ -1,19 +1,19 @@
 // Copyright © 2016 Daniel Porrey. All Rights Reserved.
 //
 // This file is part of the DHT Tiny project.
-// 
+//
 // DHT Tiny is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // DHT Tiny is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
-// along with DHT Tiny. If not, 
+// along with DHT Tiny. If not,
 // see http://www.gnu.org/licenses/.
 //
 #ifndef DEBUG_H
@@ -24,7 +24,6 @@
 #if defined( __AVR_ATtiny85__ )
 void initDebug() {}
 void displayRegisters() {}
-void displaySavedConfiguration() {}
 void displayDeviceAddress() { }
 void displayConfiguration() {}
 #else
@@ -56,23 +55,26 @@ void displayRegisters()
   Serial.print("private const byte REGISTER_START_DELAY = "); Serial.print(REGISTER_START_DELAY); Serial.println(";");
   Serial.print("private const byte REGISTER_CONFIG = "); Serial.print(REGISTER_CONFIG); Serial.println(";");
   Serial.print("private const byte REGISTER_DEVICE_ADDRESS = "); Serial.print(REGISTER_DEVICE_ADDRESS); Serial.println(";");
+  Serial.print("private const byte REGISTER_DHT_MODEL = "); Serial.print(REGISTER_DHT_MODEL); Serial.println(";");
+  Serial.println();
   Serial.print("private const byte REGISTER_TOTAL_SIZE = "); Serial.print(REGISTER_TOTAL_SIZE); Serial.println(";");
 }
 
 void displayConfiguration()
 {
-  Serial.println("");
+  Serial.println();
   Serial.print("Interval = "); Serial.println(readUint32(REGISTER_INTERVAL));
   Serial.print("Upper Threshold = "); Serial.println(readFloat(REGISTER_UPPER_THRESHOLD));
   Serial.print("Lower Threshold = "); Serial.println(readFloat(REGISTER_LOWER_THRESHOLD));
   Serial.print("Start Delay = "); Serial.println(readUint32(REGISTER_START_DELAY));
   Serial.print("Configuration = "); Serial.println(_registers[REGISTER_CONFIG]);
+  Serial.print("DHT = "); Serial.println(_registers[REGISTER_DHT_MODEL]);
 }
 
 void displayDeviceAddress()
 {
-  Serial.println("");
-  Serial.print("Device Address = "); Serial.println(_registers[REGISTER_DEVICE_ADDRESS], HEX);
+  Serial.println();
+  Serial.print("Device Address = 0x"); Serial.println(_registers[REGISTER_DEVICE_ADDRESS], HEX);
 }
 #endif
 #endif

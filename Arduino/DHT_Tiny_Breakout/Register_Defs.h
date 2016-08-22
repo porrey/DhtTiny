@@ -39,11 +39,12 @@
 #define REGISTER_START_DELAY        REGISTER_LOWER_THRESHOLD  + SIZE_FLOAT     // *** uint32
 #define REGISTER_CONFIG             REGISTER_START_DELAY      + SIZE_UINT32    // *** uint8
 #define REGISTER_DEVICE_ADDRESS     REGISTER_CONFIG           + SIZE_UINT8     // *** uint8
+#define REGISTER_DHT_MODEL          REGISTER_DEVICE_ADDRESS   + SIZE_UINT8     // *** uint8
 
 // ***
 // *** Total size of the registers in bytes.
 // ***
-#define REGISTER_TOTAL_SIZE         REGISTER_DEVICE_ADDRESS   + SIZE_UINT8
+#define REGISTER_TOTAL_SIZE         REGISTER_DHT_MODEL        + SIZE_UINT8
 
 // ***
 // *** This array indicates the number of bytes to return when a read
@@ -67,6 +68,7 @@ const uint8_t _registerSize[REGISTER_TOTAL_SIZE] =
                                         SIZE_UINT32, 0, 0, 0,
                                         SIZE_UINT8,
                                         SIZE_UINT8,
+                                        SIZE_UINT8
                                       };
                                                      
 // ***
@@ -87,7 +89,7 @@ const uint8_t _registerSize[REGISTER_TOTAL_SIZE] =
 #define STATUS_SENSOR_IS_ENABLED            0
 #define STATUS_UPPER_THRESHOLD_EXCEEDED     1
 #define STATUS_LOWER_THRESHOLD_EXCEEDED     2
-#define STATUS_RESERVED_1                   3
+#define STATUS_DHT_READING_ERROR            3
 #define STATUS_RESERVED_2                   4
 #define STATUS_CONFIG_SAVED                 5
 #define STATUS_READ_ERROR                   6
@@ -117,7 +119,8 @@ const uint8_t _registerProtection[REGISTER_TOTAL_SIZE] =
   0, 1, 1, 1, //REGISTER_LOWER_THRESHOLD
   0, 1, 1, 1, //REGISTER_START_DELAY
   0,          //REGISTER_CONFIG
-  0           //REGISTER_DEVICE_ADDRESS
+  0,          //REGISTER_DEVICE_ADDRESS
+  0           //REGISTER_DHT_MODEL
 };
 
 #endif

@@ -200,7 +200,7 @@
 							Grid.Column="3"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<TextBlock Text="Reserved"
+						<TextBlock Text="DHT Read Error"
 								   FontFamily="{StaticResource FontFamily}"
 								   TextWrapping="WrapWholeWords"
 								   FontSize="{StaticResource RegisterLabelFontSize}"
@@ -306,8 +306,8 @@
 							Grid.Column="3"
 							BorderBrush="White"
 							BorderThickness="1,0,0,1">
-						<TextBlock  x:Name="statusReserved1"
-									Text="{x:Bind StatusReserved1, Mode=OneWay}"
+						<TextBlock  x:Name="statusDhtReadError"
+                                    Text="{x:Bind StatusDhtReadError, Mode=OneWay}"
 									FontFamily="{StaticResource FontFamily}"
 									VerticalAlignment="Center"
 									HorizontalAlignment="Center"
@@ -847,9 +847,10 @@
 			<Grid>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="400" />
 					<ColumnDefinition Width="250" />
-					<ColumnDefinition Width="210" />
+					<ColumnDefinition Width="175" />
+					<ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="150" />
 				</Grid.ColumnDefinitions>
 
 				<TextBlock Grid.Column="0"
@@ -884,7 +885,15 @@
 						   Style="{ThemeResource TitleTextBlockStyle}"
 						   Margin="10,0,10,0"
 						   Foreground="Black" />
-			</Grid>
+
+                <TextBlock Grid.Column="4"
+                           Text="{x:Bind Model, Mode=OneWay}"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Style="{ThemeResource TitleTextBlockStyle}"
+                           Margin="10,0,10,0"
+                           Foreground="Black" />
+            </Grid>
 		</Border>
 	</Grid>
 </common:BindablePage>
