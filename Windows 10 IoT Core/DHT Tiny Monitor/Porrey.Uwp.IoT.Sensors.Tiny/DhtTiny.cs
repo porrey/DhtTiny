@@ -104,7 +104,7 @@ namespace Porrey.Uwp.IoT.Sensors.Tiny
 				for (byte address = minimumAddress; address <= maximumAddress; address++)
 				{
 					// ***
-					// *** Invoke the callback for progress upates.
+					// *** Invoke the callback for progress updates.
 					// ***
 					if (callback != null)
 					{
